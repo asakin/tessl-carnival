@@ -29,13 +29,17 @@ Your final score is saved to the carnival's score board when the round ends.
 ## Skins
 
 The booth follows the midway's skin. Under the Halloween skin it swaps in a
-night backdrop and pumpkin ducks in witch hats; under any other skin it draws
-the classic way, with the carnival's theme.
+night backdrop and pumpkin ducks in witch hats. Under the Thanksgiving skin it
+becomes Hook a Turkey: a harvest booth with a wood and gold awning, falling
+leaves and a "Hook a Turkey" sign, and turkeys with fanned tails float round
+instead of ducks. Both are drawn with the carnival's theme, and a turkey's ring
+sits exactly where a duck's does, so catching works the same. Under any other
+skin it draws the classic way, with the carnival's theme.
 
 ## Files
 
 - `game.ts`: the game logic (`createState`, `lower`, `hold`, `castResult`, `step`)
   and the `hookADuck` entry, the default export the midway finds.
 - `game.test.ts`: tests for the game logic.
-- `skins.ts`: the pictures each midway skin uses for the booth.
+- `skins.ts`: the look each midway skin gives the booth: pictures, or what to draw.
 - `halloween/`: the Halloween skin's SVGs, `backdrop.svg` and `duck.svg`.

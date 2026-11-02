@@ -204,10 +204,11 @@ function ready(image: HTMLImageElement | undefined): image is HTMLImageElement {
 interface Pictures {
   backdrop?: HTMLImageElement;
   duck?: HTMLImageElement;
+  look: DuckLook;
 }
 
 function loadPictures(look: DuckLook): Pictures {
-  return { backdrop: loadImage(look.backdrop), duck: loadImage(look.duck) };
+  return { backdrop: loadImage(look.backdrop), duck: loadImage(look.duck), look };
 }
 
 function drawBackdrop(ctx: CanvasRenderingContext2D, pictures: Pictures) {
@@ -221,6 +222,10 @@ function drawBackdrop(ctx: CanvasRenderingContext2D, pictures: Pictures) {
     ctx.drawImage(image, (WIDTH - w) / 2, (HEIGHT - h) / 2, w, h);
     return;
   }
+  if (pictures.look.harvest) {
+    drawHarvestBackdrop(ctx, pictures.look.sign);
+    return;
+  }
   ctx.fillStyle = colors.background;
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
   const stripe = WIDTH / 16;
@@ -230,9 +235,99 @@ function drawBackdrop(ctx: CanvasRenderingContext2D, pictures: Pictures) {
   }
 }
 
+/** A warm harvest booth: a wood and gold awning, falling leaves and a sign. */
+function drawHarvestBackdrop(ctx: CanvasRenderingContext2D, sign: string | undefined) {
+  const { colors } = theme;
+  ctx.fillStyle = colors.surface;
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+  const stripe = WIDTH / 16;
+  for (let i = 0; i < 16; i++) {
+    ctx.fillStyle = i % 2 === 0 ? colors.wood : colors.accent;
+    ctx.fillRect(i * stripe, 0, stripe, 40);
+    // A scalloped edge under the awning.
+    ctx.beginPath();
+    ctx.arc(i * stripe + stripe / 2, 40, stripe / 2, 0, Math.PI);
+    ctx.fill();
+  }
+  const leaves = [colors.stripeA, colors.accent, colors.wood, colors.danger];
+  for (let i = 0; i < 14; i++) {
+    ctx.fillStyle = leaves[i % leaves.length];
+    ctx.beginPath();
+    ctx.ellipse(40 + i * 56, 110 + ((i * 47) % 150), 9, 5, i, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  if (sign) {
+    ctx.fillStyle = colors.wood;
+    ctx.fillRect(WIDTH / 2 - 150, 70, 300, 50);
+    ctx.strokeStyle = colors.accent;
+    ctx.lineWidth = 3;
+    ctx.strokeRect(WIDTH / 2 - 150, 70, 300, 50);
+    ctx.fillStyle = colors.stripeB;
+    ctx.font = canvasFont('title', 'bold');
+    ctx.textAlign = 'center';
+    ctx.fillText(sign, WIDTH / 2, 107);
+  }
+}
+
+/** A turkey facing right, its head under the ring where a duck's would be. */
+function drawTurkey(ctx: CanvasRenderingContext2D, x: number, waterline: number) {
+  const { colors } = theme;
+  // Fanned tail feathers behind the body.
+  const feathers = [colors.stripeA, colors.accent, colors.wood, colors.danger, colors.stripeB];
+  for (let i = 0; i < 7; i++) {
+    const angle = Math.PI * (0.55 + (i / 6) * 0.9);
+    ctx.fillStyle = feathers[i % feathers.length];
+    ctx.beginPath();
+    ctx.ellipse(
+      x - 10 + Math.cos(angle) * 22,
+      waterline - 22 - Math.sin(angle) * 22,
+      9,
+      22,
+      angle - Math.PI / 2,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+  }
+  // A plump body and a wing.
+  ctx.fillStyle = colors.wood;
+  ctx.beginPath();
+  ctx.ellipse(x, waterline - 12, BODY_HALF, 18, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = colors.stripeA;
+  ctx.beginPath();
+  ctx.ellipse(x - 4, waterline - 14, 14, 8, -0.2, 0, Math.PI * 2);
+  ctx.fill();
+  // The neck and head.
+  ctx.fillStyle = colors.stripeB;
+  ctx.beginPath();
+  ctx.ellipse(x + RING_OFFSET - 2, waterline - 26, 6, 10, 0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(x + RING_OFFSET, waterline - 36, 10, 0, Math.PI * 2);
+  ctx.fill();
+  // The beak, the wattle hanging beside it and the eye.
+  ctx.fillStyle = colors.accent;
+  ctx.beginPath();
+  ctx.moveTo(x + RING_OFFSET + 8, waterline - 40);
+  ctx.lineTo(x + RING_OFFSET + 18, waterline - 36);
+  ctx.lineTo(x + RING_OFFSET + 8, waterline - 33);
+  ctx.fill();
+  ctx.fillStyle = colors.danger;
+  ctx.beginPath();
+  ctx.ellipse(x + RING_OFFSET + 9, waterline - 28, 3, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = colors.background;
+  ctx.beginPath();
+  ctx.arc(x + RING_OFFSET + 3, waterline - 39, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
 function drawDuck(ctx: CanvasRenderingContext2D, x: number, waterline: number, pictures: Pictures) {
   const { colors } = theme;
-  if (ready(pictures.duck)) {
+  if (pictures.look.creature === 'turkey') {
+    drawTurkey(ctx, x, waterline);
+  } else if (ready(pictures.duck)) {
     const w = BODY_HALF * 2.4;
     const h = (pictures.duck.naturalHeight / pictures.duck.naturalWidth) * w;
     ctx.drawImage(pictures.duck, x - w / 2, waterline + 8 - h, w, h);
