@@ -3,12 +3,16 @@ import arch from './arch.svg';
 import balloons from './balloons.svg';
 import bigTop from './big-top.svg';
 import booth from './booth.svg';
+import carousel from './carousel.svg';
 import cart from './cart.svg';
 import peakedTent from './peaked-tent.svg';
 import roundTent from './round-tent.svg';
 import tree from './tree.svg';
 
-/** A spooky night at the carnival: pumpkin tents, bare trees and a bubbling cauldron. */
+/**
+ * A spooky night at the carnival: pumpkin tents, bare trees, a bubbling
+ * cauldron, a carousel of skeleton horses and zombies among the visitors.
+ */
 export const HALLOWEEN_SKIN: MidwaySkin = {
   id: 'halloween',
   name: 'Halloween',
@@ -50,5 +54,14 @@ export const HALLOWEEN_SKIN: MidwaySkin = {
     tree,
     cart,
     balloons,
+    carousel,
+  },
+  zombies: {
+    every: 3,
+    skins: ['#8fae6b', '#9aa58c', '#7d9467'],
+    hairs: ['#2a2233', '#3f394f', '#524b63'],
+    shirts: ['#3f394f', '#2a1f3d', '#4a3b2a'],
+    pants: ['#1a1020', '#2b2433'],
+    eyes: '#7be05a',
   },
 };
