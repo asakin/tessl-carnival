@@ -10,6 +10,7 @@ import {
   type MidwaySkin,
 } from './skins';
 import { HALLOWEEN_SKIN } from './skins/halloween';
+import { THANKSGIVING_SKIN } from './skins/thanksgiving';
 
 function memoryStorage() {
   const data = new Map<string, string>();
@@ -100,7 +101,7 @@ describe('skin store', () => {
 
 describe('halloween skin', () => {
   it('is registered on the midway after the classic skin', () => {
-    expect(listSkins().map((s) => s.id)).toEqual(['classic', 'halloween']);
+    expect(listSkins().map((s) => s.id)).toEqual(['classic', 'halloween', 'thanksgiving']);
     expect(getSkin('halloween')).toBe(HALLOWEEN_SKIN);
     expect(HALLOWEEN_SKIN.name).toBe('Halloween');
   });
@@ -156,6 +157,54 @@ describe('halloween skin', () => {
   });
 });
 
+describe('thanksgiving skin', () => {
+  it('is registered on the midway after the halloween skin', () => {
+    expect(listSkins().map((s) => s.id)).toEqual(['classic', 'halloween', 'thanksgiving']);
+    expect(getSkin('thanksgiving')).toBe(THANKSGIVING_SKIN);
+    expect(THANKSGIVING_SKIN.name).toBe('Thanksgiving');
+  });
+
+  it('recolours the sky, ground and paths and swaps the props for SVG sprites', () => {
+    const { palette: colors = {}, sprites = {} } = THANKSGIVING_SKIN;
+    for (const key of ['sky', 'skyHigh', 'grass', 'path', 'hedge', 'red', 'gold'] as const) {
+      expect(colors[key]).not.toBe(defaultPalette[key]);
+      expect(colors[key]).not.toBe(HALLOWEEN_SKIN.palette?.[key]);
+    }
+    for (const key of [
+      'big-top',
+      'round-tent',
+      'peaked-tent',
+      'booth',
+      'arch',
+      'tree',
+      'cart',
+      'balloons',
+    ] as const) {
+      expect(sprites[key]).toMatch(/\.svg$|^data:image\/svg\+xml/);
+      expect(sprites[key]).not.toBe(HALLOWEEN_SKIN.sprites?.[key]);
+    }
+  });
+
+  it('rides turkeys on the spinning carousel instead of a still picture', () => {
+    expect(THANKSGIVING_SKIN.sprites?.carousel).toBeUndefined();
+    const look = THANKSGIVING_SKIN.carousel!;
+    expect(look.turkeys).toBeDefined();
+    expect(look.turkeys!.tail.length).toBeGreaterThan(1);
+    expect(look.skeletal).toBeUndefined();
+    expect(HALLOWEEN_SKIN.carousel!.turkeys).toBeUndefined();
+  });
+
+  it('can be chosen as the active skin', () => {
+    const skins = createSkinStore(memoryStorage());
+    skins.register(THANKSGIVING_SKIN);
+    skins.setActive('thanksgiving');
+    expect(palette.sky).toBe(THANKSGIVING_SKIN.palette!.sky);
+    expect(palette.grass).toBe(THANKSGIVING_SKIN.palette!.grass);
+    skins.setActive('classic');
+    expect(palette.sky).toBe(defaultPalette.sky);
+  });
+});
+
 describe('visitor looks', () => {
   const visitors = Array.from({ length: 9 }, (_, n) => n);
 
@@ -183,6 +232,37 @@ describe('visitor looks', () => {
     visitors.forEach((n) => {
       if (!looks[n].zombieEyes) expect(looks[n]).toEqual(visitorLook(n, CLASSIC_SKIN));
     });
+  });
+
+  it('makes some thanksgiving visitors turkeys, and dresses the rest for autumn', () => {
+    const turkeys = THANKSGIVING_SKIN.turkeys!;
+    const looks = visitors.map((n) => visitorLook(n, THANKSGIVING_SKIN));
+    const birds = looks.filter((look) => look.turkey);
+    expect(birds.length).toBeGreaterThan(0);
+    expect(birds.length).toBeLessThan(looks.length);
+    for (const look of birds) {
+      expect(look.turkey).toEqual({
+        tail: turkeys.tail,
+        wattle: turkeys.wattle,
+        beak: turkeys.beak,
+      });
+      expect(turkeys.bodies).toContain(look.shirt);
+      expect(turkeys.heads).toContain(look.skin);
+      expect(look.zombieEyes).toBeUndefined();
+    }
+    const skins = createSkinStore(memoryStorage());
+    skins.register(THANKSGIVING_SKIN);
+    skins.setActive('thanksgiving');
+    for (const look of visitors.map((n) => visitorLook(n, THANKSGIVING_SKIN)))
+      if (!look.turkey) expect(THANKSGIVING_SKIN.palette!.shirts).toContain(look.shirt);
+    skins.setActive('classic');
+  });
+
+  it('leaves classic and halloween visitors without turkeys', () => {
+    for (const n of visitors) {
+      expect(visitorLook(n, CLASSIC_SKIN).turkey).toBeUndefined();
+      expect(visitorLook(n, HALLOWEEN_SKIN).turkey).toBeUndefined();
+    }
   });
 
   it('follows the active skin when no skin is given', () => {

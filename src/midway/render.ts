@@ -7,6 +7,7 @@ import {
   type MidwaySkin,
   type SpriteKey,
   type StripeColors,
+  type TurkeyRiders,
 } from './skins';
 import {
   CART_KINDS,
@@ -639,6 +640,104 @@ function carouselHorse(
   if (look.eyes) oval(ctx, x + facing * 7, hy - 5, 1, 1, look.eyes);
 }
 
+/** A fan of tail feathers round (`x`, `y`), opening upwards, outside colour first. */
+function tailFan(ctx: Ctx, x: number, y: number, r: number, colors: readonly string[]) {
+  const count = 7;
+  colors.forEach((color, ring) => {
+    const reach = r * (1 - ring * 0.28);
+    for (let k = 0; k < count; k++) {
+      const a0 = Math.PI * (1.02 + (k / count) * 0.96);
+      const a1 = Math.PI * (1.02 + ((k + 1) / count) * 0.96);
+      const mid = (a0 + a1) / 2;
+      poly(
+        ctx,
+        [
+          [x, y],
+          [x + Math.cos(a0) * reach * 0.9, y + Math.sin(a0) * reach * 0.9],
+          [x + Math.cos(mid) * reach, y + Math.sin(mid) * reach],
+          [x + Math.cos(a1) * reach * 0.9, y + Math.sin(a1) * reach * 0.9],
+        ],
+        ring === 0 && k % 2 ? colors[Math.min(1, colors.length - 1)] : color,
+      );
+    }
+  });
+}
+
+/** A turkey's head: a beak towards `facing` and a red wattle hanging off it. */
+function turkeyHead(
+  ctx: Ctx,
+  x: number,
+  y: number,
+  facing: number,
+  color: string,
+  turkey: TurkeyRiders,
+) {
+  oval(ctx, x, y, 2.4, 2.4, color);
+  poly(
+    ctx,
+    [
+      [x + facing * 1.8, y - 0.8],
+      [x + facing * 4.2, y + 0.2],
+      [x + facing * 1.8, y + 0.9],
+    ],
+    turkey.beak,
+  );
+  stroke(
+    ctx,
+    [
+      [x + facing * 1.6, y + 0.8],
+      [x + facing * 2, y + 3.4],
+    ],
+    turkey.wattle,
+    1.3,
+  );
+  oval(ctx, x + facing * 0.8, y - 0.8, 0.5, 0.5, palette.ink);
+}
+
+/** A carousel turkey, its body at (`x`, `hy`), its head towards `facing`. */
+function carouselTurkey(
+  ctx: Ctx,
+  x: number,
+  hy: number,
+  facing: number,
+  color: string,
+  look: CarouselLook,
+  turkey: TurkeyRiders,
+) {
+  tailFan(ctx, x - facing * 3, hy - 1, 9, turkey.tail);
+  for (const side of [-1, 1])
+    stroke(
+      ctx,
+      [
+        [x + side * 2, hy + 3],
+        [x + side * 2.5, hy + 7],
+      ],
+      turkey.beak,
+      1.2,
+    );
+  oval(ctx, x, hy, 5.5, 4, color);
+  stroke(
+    ctx,
+    [
+      [x + facing * 3, hy - 2],
+      [x + facing * 5, hy - 6],
+    ],
+    color,
+    2.6,
+  );
+  turkeyHead(ctx, x + facing * 5.5, hy - 7, facing, color, turkey);
+  poly(
+    ctx,
+    [
+      [x - 2, hy - 3.5],
+      [x + 2, hy - 3.5],
+      [x + 1, hy - 1.5],
+      [x - 1, hy - 1.5],
+    ],
+    look.saddle,
+  );
+}
+
 /** A jack-o'-lantern on the carousel's centre column. */
 function lantern(ctx: Ctx, x: number, y: number, color: string, face: string) {
   oval(ctx, x, y, 4.5, 3.8, color);
@@ -702,7 +801,8 @@ function carousel(ctx: Ctx, prop: Prop, t: number, look = CLASSIC_CAROUSEL()) {
     );
     const facing = Math.cos(angle + Math.PI / 2) < 0 ? -1 : 1;
     const color = look.horses[i % look.horses.length];
-    carouselHorse(ctx, x, y - 16 + bob, facing, color, look);
+    if (look.turkeys) carouselTurkey(ctx, x, y - 16 + bob, facing, color, look, look.turkeys);
+    else carouselHorse(ctx, x, y - 16 + bob, facing, color, look);
   };
   horses.filter((h) => Math.sin(h.angle) < 0).forEach(drawHorse);
   const column = rimPoint(c, 0, 0, 6);
@@ -892,6 +992,7 @@ function person(
   const swing = options.swing ?? 0;
   const dir = options.dir ?? 1;
   oval(ctx, x, y, 5, 2, palette.shadow);
+  if (look.turkey) return turkeyWalker(ctx, x, y, look, look.turkey, swing, dir, options.back);
   if (options.player) {
     ctx.strokeStyle = palette.gold;
     ctx.lineWidth = 1.5;
@@ -995,6 +1096,55 @@ function person(
       palette.gold,
     );
   }
+}
+
+/** A turkey strutting round the midway: brown plumage, a fanned tail, beak and wattle. */
+function turkeyWalker(
+  ctx: Ctx,
+  x: number,
+  y: number,
+  look: Look,
+  turkey: TurkeyRiders,
+  swing: number,
+  dir: number,
+  back = false,
+) {
+  for (const side of [-1, 1])
+    stroke(
+      ctx,
+      [
+        [x + side * 1.6, y - 7],
+        [x + side * 1.6 + side * swing * 1.4, y - 1],
+      ],
+      look.pants,
+      1.2,
+    );
+  // Seen from behind, the tail hides the body; otherwise it fans out behind it.
+  if (!back) tailFan(ctx, x - dir * 2.5, y - 11, 11, turkey.tail);
+  oval(ctx, x, y - 10.5, 5.5, 5, look.shirt);
+  stroke(
+    ctx,
+    [
+      [x - dir * 2, y - 11],
+      [x + dir * 1.5, y - 9],
+    ],
+    look.hair,
+    1.6,
+  );
+  if (back) {
+    tailFan(ctx, x, y - 9, 11, turkey.tail);
+    return;
+  }
+  stroke(
+    ctx,
+    [
+      [x + dir * 3, y - 13],
+      [x + dir * 4, y - 17.5],
+    ],
+    look.shirt,
+    2.4,
+  );
+  turkeyHead(ctx, x + dir * 4.2, y - 19, dir, look.skin, turkey);
 }
 
 /** A zombie's torn shirt hem, with skin showing through. */
@@ -1742,10 +1892,26 @@ export interface Look {
   cap?: string;
   /** A zombie holds its arms out, wears a torn shirt and its eyes glow this colour. */
   zombieEyes?: string;
+  /**
+   * A turkey, drawn with its body in `shirt`, its wing in `hair`, its head in
+   * `skin` and its legs in `pants`, with these feathers, beak and wattle.
+   */
+  turkey?: TurkeyRiders;
 }
 
-/** The look of visitor `n`; the skin can make some of them zombies. */
+/** The look of visitor `n`; the skin can make some of them zombies or turkeys. */
 export function visitorLook(n: number, skin: MidwaySkin = getActiveSkin()): Look {
+  const turkeys = skin.turkeys;
+  if (turkeys && n % turkeys.every === 0) {
+    const k = n / turkeys.every;
+    return {
+      skin: turkeys.heads[k % turkeys.heads.length],
+      hair: turkeys.wings[k % turkeys.wings.length],
+      shirt: turkeys.bodies[k % turkeys.bodies.length],
+      pants: turkeys.legs,
+      turkey: { tail: turkeys.tail, wattle: turkeys.wattle, beak: turkeys.beak },
+    };
+  }
   const zombies = skin.zombies;
   if (zombies && n % zombies.every === 0) {
     const k = n / zombies.every;
