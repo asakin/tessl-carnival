@@ -1,6 +1,7 @@
 import { canvasFont, recordScore, theme, type CarnivalGame } from '../../carnival';
 import { getActiveSkin } from '../../midway/skins';
 import { HALLOWEEN_DARTS } from './skins/halloween';
+import { THANKSGIVING_DARTS } from './skins/thanksgiving';
 
 const { width: WIDTH, height: HEIGHT } = theme.canvas;
 
@@ -39,6 +40,8 @@ export interface DartsSkin {
     bull: ThemeColor;
     outerBull: ThemeColor;
   };
+  /** Hang a pumpkin instead of the round board, with the scoring rings on it. */
+  pumpkinBoard?: boolean;
 }
 
 const CLASSIC_DARTS: DartsSkin = {
@@ -46,7 +49,10 @@ const CLASSIC_DARTS: DartsSkin = {
 };
 
 /** The booth's look for each midway skin id. */
-const SKINS: Record<string, DartsSkin> = { halloween: HALLOWEEN_DARTS };
+const SKINS: Record<string, DartsSkin> = {
+  halloween: HALLOWEEN_DARTS,
+  thanksgiving: THANKSGIVING_DARTS,
+};
 
 /** The booth's look under the midway skin with this id, falling back to classic. */
 export function dartsSkin(skinId: string): DartsSkin {
@@ -186,15 +192,83 @@ function drawDart(
   ctx.fill();
 }
 
+/** A ribbed pumpkin around the board, with its stem and a curly vine on top. */
+function drawPumpkin(ctx: CanvasRenderingContext2D) {
+  const { colors } = theme;
+  const r = BOARD_RADIUS + 20;
+  const top = BOARD.y - r;
+
+  // The stem and its vine sit behind the top of the pumpkin.
+  ctx.fillStyle = colors.wood;
+  ctx.strokeStyle = colors.surface;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(BOARD.x - 12, top + 14);
+  ctx.lineTo(BOARD.x - 8, top - 22);
+  ctx.lineTo(BOARD.x + 12, top - 28);
+  ctx.lineTo(BOARD.x + 12, top + 14);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.strokeStyle = colors.wood;
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(BOARD.x + 10, top - 14);
+  ctx.bezierCurveTo(BOARD.x + 40, top - 34, BOARD.x + 62, top - 4, BOARD.x + 46, top - 2);
+  ctx.bezierCurveTo(BOARD.x + 32, top, BOARD.x + 38, top - 22, BOARD.x + 54, top - 20);
+  ctx.bezierCurveTo(BOARD.x + 70, top - 18, BOARD.x + 76, top - 6, BOARD.x + 90, top - 10);
+  ctx.stroke();
+
+  // Lobes from the outside in, so the middle ones overlap the sides.
+  const lobes = [
+    { dx: 0.55, rx: 0.5, ry: 0.88, color: colors.stripeA },
+    { dx: 0.28, rx: 0.5, ry: 0.96, color: colors.danger },
+    { dx: 0, rx: 0.45, ry: 1, color: colors.accent },
+  ];
+  ctx.strokeStyle = colors.stripeA;
+  ctx.lineWidth = 3;
+  for (const lobe of lobes) {
+    for (const side of lobe.dx === 0 ? [0] : [-1, 1]) {
+      ctx.fillStyle = lobe.color;
+      ctx.beginPath();
+      ctx.ellipse(
+        BOARD.x + side * lobe.dx * r,
+        BOARD.y,
+        lobe.rx * r,
+        lobe.ry * r,
+        0,
+        0,
+        Math.PI * 2,
+      );
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+
+  // A soft highlight down the front lobe.
+  ctx.strokeStyle = colors.stripeB;
+  ctx.globalAlpha = 0.4;
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.ellipse(BOARD.x - r * 0.18, BOARD.y, r * 0.12, r * 0.7, 0, Math.PI * 0.6, Math.PI * 1.4);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+
 function drawBoard(ctx: CanvasRenderingContext2D, skin: DartsSkin) {
   const { colors } = theme;
   const board = skin.board ?? CLASSIC_DARTS.board!;
 
-  // The board's dark rim.
-  ctx.fillStyle = colors.surface;
-  ctx.beginPath();
-  ctx.arc(BOARD.x, BOARD.y, BOARD_RADIUS + 14, 0, Math.PI * 2);
-  ctx.fill();
+  if (skin.pumpkinBoard) {
+    drawPumpkin(ctx);
+  } else {
+    // The board's dark rim.
+    ctx.fillStyle = colors.surface;
+    ctx.beginPath();
+    ctx.arc(BOARD.x, BOARD.y, BOARD_RADIUS + 14, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   ctx.strokeStyle = colors[board.wire];
   ctx.lineWidth = 2;
@@ -202,9 +276,12 @@ function drawBoard(ctx: CanvasRenderingContext2D, skin: DartsSkin) {
     const ring = RINGS[i];
     ctx.fillStyle =
       i === 0 ? colors[board.bull] : i === 1 ? colors[board.outerBull] : colors[board.rings[i % 2]];
+    // On a pumpkin the scoring rings are painted on thinly, so the pumpkin shows through.
+    ctx.globalAlpha = skin.pumpkinBoard && i > 1 ? 0.45 : 1;
     ctx.beginPath();
     ctx.arc(BOARD.x, BOARD.y, ring.radius, 0, Math.PI * 2);
     ctx.fill();
+    ctx.globalAlpha = 1;
     ctx.stroke();
   }
 
