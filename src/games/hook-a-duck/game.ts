@@ -110,12 +110,14 @@ export function hold(state: HookADuckState): void {
 }
 
 /**
- * What happens to the hook right now, or undefined if the cast goes on. The
+ * What happens to the hook right now, or undefined if the cast goes on. Only a
+ * hook being lowered in a cast can end it: a hanging hook catches nothing. The
  * hook catches a duck when its tip is in the ring's band, over the ring, and
  * moving gently. Too fast, or below the ring onto the duck, and it misses.
  */
 export function castResult(state: HookADuckState): { result: CastResult; duck?: Duck } | undefined {
   const { hook } = state;
+  if (state.phase !== 'playing' || hook.phase !== 'casting' || !hook.lowering) return undefined;
   for (const duck of state.ducks) {
     if (duck.sink > 0 || Math.abs(HOOK_X - duck.x) > BODY_HALF) continue;
     const onRing = Math.abs(HOOK_X - ringX(duck)) <= RING_HALF;
@@ -395,6 +397,8 @@ export const hookADuck: CarnivalGame = {
     window.addEventListener('pointercancel', release);
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
+    // A release outside the window never reaches it, so losing focus lets go too.
+    window.addEventListener('blur', release);
 
     let frame = 0;
     let last = performance.now();
@@ -420,6 +424,7 @@ export const hookADuck: CarnivalGame = {
       window.removeEventListener('pointercancel', release);
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', release);
     };
   },
 };

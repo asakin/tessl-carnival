@@ -7,6 +7,7 @@ one by the ring on its head as it passes.
 
 - Hold the mouse button (or the space bar) to lower the hook, and let go to hold
   it still. The hook speeds up the longer you hold, so lower it in short taps.
+  Switching away from the window lets go too.
 - Catch a duck by bringing the hook down onto the ring on its head while the
   line is still pale. A red line means the hook is moving too fast.
 - A cast misses if the hook comes down too fast, lands on the duck's back instead

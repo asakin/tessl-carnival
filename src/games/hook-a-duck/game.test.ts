@@ -72,8 +72,8 @@ describe('hook a duck', () => {
     const state = oneDuckUnderHook(30);
     state.hook.y = (RING_TOP + RING_BOTTOM) / 2;
     state.hook.speed = GENTLE_SPEED / 2;
-    expect(castResult(state)?.result).toBe('caught');
     lower(state);
+    expect(castResult(state)?.result).toBe('caught');
     step(state, 0);
     expect(state.score).toBe(30);
     expect(state.castsLeft).toBe(CASTS_PER_ROUND - 1);
@@ -83,8 +83,8 @@ describe('hook a duck', () => {
     const state = oneDuckUnderHook();
     state.hook.y = RING_TOP + 1;
     state.hook.speed = GENTLE_SPEED + 50;
-    expect(castResult(state)?.result).toBe('too-fast');
     lower(state);
+    expect(castResult(state)?.result).toBe('too-fast');
     step(state, 0);
     expect(state.score).toBe(0);
     expect(state.ducks[0].sink).toBeGreaterThan(0);
@@ -96,8 +96,8 @@ describe('hook a duck', () => {
     // The hook is over the duck's back, not its ring.
     state.ducks = [{ x: HOOK_X + 20, points: 20, sink: 0 }];
     state.hook.y = RING_BOTTOM + 5;
-    expect(castResult(state)?.result).toBe('landed-on-duck');
     lower(state);
+    expect(castResult(state)?.result).toBe('landed-on-duck');
     step(state, 0);
     expect(state.score).toBe(0);
     expect(state.ducks[0].sink).toBeCloseTo(SINK_TIME);
@@ -107,6 +107,7 @@ describe('hook a duck', () => {
     const state = oneDuckUnderHook();
     state.ducks[0].sink = SINK_TIME;
     state.hook.y = (RING_TOP + RING_BOTTOM) / 2;
+    lower(state);
     expect(castResult(state)).toBeUndefined();
   });
 
@@ -114,8 +115,8 @@ describe('hook a duck', () => {
     const state = createState();
     state.ducks = [];
     state.hook.y = WATER_Y;
-    expect(castResult(state)?.result).toBe('splash');
     lower(state);
+    expect(castResult(state)?.result).toBe('splash');
     step(state, 0);
     expect(state.castsLeft).toBe(CASTS_PER_ROUND - 1);
   });
@@ -142,9 +143,19 @@ describe('hook a duck', () => {
   it('catches nothing while the hook just hangs at the ring', () => {
     const state = oneDuckUnderHook();
     state.hook.y = (RING_TOP + RING_BOTTOM) / 2;
+    expect(castResult(state)).toBeUndefined();
     step(state, 0.05);
     expect(state.score).toBe(0);
     expect(state.castsLeft).toBe(CASTS_PER_ROUND);
+  });
+
+  it('reports no result for a hook the player has stopped lowering', () => {
+    const state = oneDuckUnderHook();
+    state.hook.y = (RING_TOP + RING_BOTTOM) / 2;
+    lower(state);
+    expect(castResult(state)?.result).toBe('caught');
+    hold(state);
+    expect(castResult(state)).toBeUndefined();
   });
 
   it('misses when the hook is dropped all the way down in one go', () => {
