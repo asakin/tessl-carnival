@@ -65,6 +65,8 @@ src/
     world.test.ts
     render.ts             drawing the scenery, booths and people
     palette.ts            the map's scenery colours, built on the theme
+    skins.ts              the skin registry: swappable palettes and SVG sprites
+    skins.test.ts
     midway.ts             input, camera and the animation loop
   carnival/               shared base every game uses
     registry.ts           the CarnivalGame shape and the registry

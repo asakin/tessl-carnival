@@ -195,6 +195,41 @@ kbd {
   font-weight: normal;
 }
 
+.midway-skins {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.midway-skins h2 {
+  flex-basis: 100%;
+}
+
+.midway-skins button {
+  padding: 2px 10px;
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.midway-skins button:hover,
+.midway-skins button:focus-visible {
+  border-color: var(--color-accent);
+}
+
+.midway-skins button[aria-pressed='true'] {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-background);
+  font-weight: bold;
+}
+
 .booth-card {
   bottom: 16px;
   left: 50%;

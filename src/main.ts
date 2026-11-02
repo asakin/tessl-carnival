@@ -2,6 +2,7 @@ import './style.css';
 import { applyTheme, bestScore, type CarnivalGame } from './carnival';
 import { registry } from './games';
 import { startMidway } from './midway/midway';
+import { getActiveSkin, listSkins, setActiveSkin } from './midway/skins';
 import type { BoothSlot } from './midway/world';
 import { carnivalLink, REPO_URL, shareLinks } from './share';
 
@@ -42,6 +43,9 @@ function renderMidway() {
       <nav class="midway-guide" aria-label="Booths">
         <h2>Booths</h2>
         <ul></ul>
+        <div class="midway-skins" role="group" aria-label="Skins">
+          <h2>Skins</h2>
+        </div>
       </nav>
       <div class="booth-card" aria-live="polite" hidden>
         <h2></h2>
@@ -67,6 +71,25 @@ function renderMidway() {
     item.querySelector('.best')!.textContent = bestText(game);
     guide.append(item);
   }
+
+  const skinPicker = app.querySelector('.midway-skins')!;
+  const skinButtons = listSkins().map((skin) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = skin.name;
+    button.addEventListener('click', () => {
+      setActiveSkin(skin.id);
+      showActiveSkin();
+    });
+    skinPicker.append(button);
+    return { id: skin.id, button };
+  });
+  const showActiveSkin = () => {
+    const active = getActiveSkin().id;
+    for (const { id, button } of skinButtons)
+      button.setAttribute('aria-pressed', `${id === active}`);
+  };
+  showActiveSkin();
 
   const card = app.querySelector<HTMLElement>('.booth-card')!;
   const showBooth = (booth: BoothSlot | undefined) => {

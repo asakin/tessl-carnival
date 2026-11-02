@@ -5,9 +5,10 @@ const { colors } = theme;
 /**
  * The midway map's sunset palette. Tent reds, creams and golds come from the
  * carnival theme; the sky, grass, paths and other scenery shades only the map
- * uses live here.
+ * uses live here. It's the classic skin's palette, and the base every other
+ * skin's overrides go on top of.
  */
-export const palette = {
+export const defaultPalette = {
   sky: '#f7943c',
   skyHigh: '#8e3b8f',
   cloud: '#bfeafc',
@@ -54,4 +55,18 @@ export const palette = {
   pants: ['#2d3a6b', '#3b2a4f', '#5a4a3a'],
   bunting: [colors.stripeA, colors.accent, '#2b8ccc', colors.stripeB],
   balloons: [colors.stripeA, colors.accent, '#2b8ccc', colors.water, '#f59ac0'],
-} as const;
+};
+
+export type MidwayPalette = typeof defaultPalette;
+
+/**
+ * The colours the midway draws with right now: the default palette with the
+ * active skin's overrides on top. Read it at draw time, not at import time,
+ * so a skin change shows on the next frame.
+ */
+export const palette: MidwayPalette = { ...defaultPalette };
+
+/** Puts `overrides` over the default palette, dropping any earlier overrides. */
+export function applyPalette(overrides: Partial<MidwayPalette> = {}) {
+  Object.assign(palette, defaultPalette, overrides);
+}

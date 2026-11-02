@@ -1,6 +1,7 @@
 import { canvasFont, theme } from '../carnival';
 import bannerUrl from './aidevcon-banner.png';
 import { palette } from './palette';
+import { getActiveSkin, type SpriteKey } from './skins';
 import {
   CART_KINDS,
   toScreen,
@@ -322,6 +323,9 @@ export function drawGroundLayer(map: MidwayMap, wanted: number): GroundLayer {
 
 function tree(ctx: Ctx, x: number, y: number) {
   const [px, py] = at(x, y);
+  const image = sprite('tree');
+  if (image)
+    return drawSprite(ctx, image, { left: px - 12, right: px + 12, top: py - 31, bottom: py + 6 });
   oval(ctx, px + 4, py + 1, 12, 5, palette.shadow);
   poly(
     ctx,
@@ -370,24 +374,25 @@ interface Stripes {
   bShade: string;
 }
 
-const RED: Stripes = {
+/** Read at draw time, so they follow the active skin. */
+const RED = (): Stripes => ({
   a: palette.red,
   aShade: palette.redShade,
   b: palette.cream,
   bShade: palette.creamShade,
-};
-const GOLD: Stripes = {
+});
+const GOLD = (): Stripes => ({
   a: palette.gold,
   aShade: palette.goldShade,
   b: palette.cream,
   bShade: palette.creamShade,
-};
-const BLUE: Stripes = {
+});
+const BLUE = (): Stripes => ({
   a: palette.blue,
   aShade: palette.blueShade,
   b: palette.cream,
   bShade: palette.creamShade,
-};
+});
 const TENT_COLORS = [GOLD, BLUE, BLUE, RED] as const;
 
 function rimPoint(c: Pt, r: number, angle: number, z: number): Pt {
@@ -529,7 +534,7 @@ function roundTent(
 function bigTop(ctx: Ctx, prop: Prop, t: number) {
   const cx = prop.x + prop.w / 2;
   const cy = prop.y + prop.h / 2;
-  roundTent(ctx, cx, cy, 1.9, 38, 46, RED, t, palette.red);
+  roundTent(ctx, cx, cy, 1.9, 38, 46, RED(), t, palette.red);
   const c = at(cx, cy);
   // A second ring of bunting, and gold lights round the wall.
   ringFlags(ctx, c, 1.5, 38 + 22, t, 12);
@@ -547,7 +552,7 @@ function carousel(ctx: Ctx, prop: Prop, t: number) {
   const turn = t * 0.5;
   const r = 1.75;
   oval(ctx, c[0] + 8, c[1] + 4, r * ISO_RX * 1.1, r * ISO_RY * 1.1, palette.shadow);
-  cylinder(ctx, c, r, 0, 6, RED, 24);
+  cylinder(ctx, c, r, 0, 6, RED(), 24);
   oval(ctx, c[0], c[1] - 6, r * ISO_RX, r * ISO_RY, palette.pink);
   oval(ctx, c[0], c[1] - 6, r * ISO_RX * 0.82, r * ISO_RY * 0.82, palette.pinkShade);
 
@@ -635,7 +640,7 @@ function carousel(ctx: Ctx, prop: Prop, t: number) {
   );
   horses.filter((h) => Math.sin(h.angle) >= 0).forEach(drawHorse);
 
-  dome(ctx, c, r * 1.15, roofZ, 26, RED, turn);
+  dome(ctx, c, r * 1.15, roofZ, 26, RED(), turn);
   scallopRing(ctx, c, r * 1.15, roofZ, 14, 4, [palette.red, palette.cream]);
   ringFlags(ctx, c, r * 1.05, roofZ - 6, t, 16);
   knob(ctx, c[0], c[1] - roofZ - 26);
@@ -646,7 +651,7 @@ function carousel(ctx: Ctx, prop: Prop, t: number) {
 
 /** A tent with a ridged roof running along the x axis. */
 function peakedTent(ctx: Ctx, prop: Prop, t: number) {
-  const colors = prop.variant % 2 === 0 ? BLUE : RED;
+  const colors = prop.variant % 2 === 0 ? BLUE() : RED();
   const x0 = prop.x + 0.2;
   const x1 = prop.x + prop.w - 0.2;
   const y0 = prop.y + 0.25;
@@ -949,7 +954,7 @@ function cart(ctx: Ctx, prop: Prop, t: number) {
     }
   } else if (kind === 2) {
     stroke(ctx, [top, [top[0], top[1] - 22]], palette.metalShade, 1.2);
-    dome(ctx, [top[0], top[1] - 18], 0.75, 0, 9, BLUE, 0, 10);
+    dome(ctx, [top[0], top[1] - 18], 0.75, 0, 9, BLUE(), 0, 10);
     for (let i = 0; i < 3; i++)
       oval(
         ctx,
@@ -1341,38 +1346,40 @@ function ferrisWheel(ctx: Ctx, prop: Prop, t: number) {
 
 // ── Booths ────────────────────────────────────────────────────────────────
 
-const BOOTH_SCHEMES = [
-  {
-    wall: palette.gold,
-    wallShade: palette.goldShade,
-    awning: [palette.blue, palette.cream],
-    awningShade: [palette.blueShade, palette.creamShade],
-  },
-  {
-    wall: palette.cream,
-    wallShade: palette.creamShade,
-    awning: [palette.red, palette.cream],
-    awningShade: [palette.redShade, palette.creamShade],
-  },
-  {
-    wall: palette.sky2,
-    wallShade: palette.blue,
-    awning: [palette.gold, palette.cream],
-    awningShade: [palette.goldShade, palette.creamShade],
-  },
-  {
-    wall: palette.pink,
-    wallShade: palette.pinkShade,
-    awning: [palette.red, palette.gold],
-    awningShade: [palette.redShade, palette.goldShade],
-  },
-] as const;
-const CLOSED_SCHEME = {
-  wall: palette.closed,
-  wallShade: palette.closedShade,
-  awning: [palette.closed, palette.metal],
-  awningShade: [palette.closedShade, palette.metalShade],
-} as const;
+const boothSchemes = () =>
+  [
+    {
+      wall: palette.gold,
+      wallShade: palette.goldShade,
+      awning: [palette.blue, palette.cream],
+      awningShade: [palette.blueShade, palette.creamShade],
+    },
+    {
+      wall: palette.cream,
+      wallShade: palette.creamShade,
+      awning: [palette.red, palette.cream],
+      awningShade: [palette.redShade, palette.creamShade],
+    },
+    {
+      wall: palette.sky2,
+      wallShade: palette.blue,
+      awning: [palette.gold, palette.cream],
+      awningShade: [palette.goldShade, palette.creamShade],
+    },
+    {
+      wall: palette.pink,
+      wallShade: palette.pinkShade,
+      awning: [palette.red, palette.gold],
+      awningShade: [palette.redShade, palette.goldShade],
+    },
+  ] as const;
+const closedScheme = () =>
+  ({
+    wall: palette.closed,
+    wallShade: palette.closedShade,
+    awning: [palette.closed, palette.metal],
+    awningShade: [palette.closedShade, palette.metalShade],
+  }) as const;
 
 const BOOTH_WALL = 34;
 /** How far above a booth's footprint its sign hangs. */
@@ -1388,9 +1395,21 @@ function target(ctx: Ctx, r: number) {
   });
 }
 
+function boothSignColors(open: boolean) {
+  return open
+    ? { board: palette.cream, edge: palette.red, text: palette.red }
+    : { board: palette.metal, edge: palette.closedShade, text: palette.closedShade };
+}
+
+/** Where a booth's roof sign is centred. */
+function boothSignAt(slot: BoothSlot): Pt {
+  return at(slot.x + 1, slot.y + 1, BOOTH_SIGN_HEIGHT - 6);
+}
+
 function booth(ctx: Ctx, slot: BoothSlot, name: string, t: number, glow: boolean) {
   const open = slot.gameId !== undefined;
-  const scheme = open ? BOOTH_SCHEMES[slot.index % BOOTH_SCHEMES.length] : CLOSED_SCHEME;
+  const schemes = boothSchemes();
+  const scheme = open ? schemes[slot.index % schemes.length] : closedScheme();
   const x0 = slot.x + 0.15;
   const y0 = slot.y + 0.15;
   const s = 1.7;
@@ -1511,8 +1530,7 @@ function booth(ctx: Ctx, slot: BoothSlot, name: string, t: number, glow: boolean
   );
 
   // The sign on the roof, with the game's name on it.
-  const signAt = at(x0 + s / 2, y0 + s / 2, BOOTH_SIGN_HEIGHT - 6);
-  onPlane(ctx, signAt, () => {
+  onPlane(ctx, boothSignAt(slot), () => {
     ctx.fillStyle = palette.woodDark;
     ctx.fillRect(-20, 2, 2, 12);
     ctx.fillRect(18, 2, 2, 12);
@@ -1522,16 +1540,7 @@ function booth(ctx: Ctx, slot: BoothSlot, name: string, t: number, glow: boolean
       target(ctx, 9);
       ctx.restore();
     }
-    signBoard(
-      ctx,
-      name,
-      60,
-      16,
-      open
-        ? { board: palette.cream, edge: palette.red, text: palette.red }
-        : { board: palette.metal, edge: palette.closedShade, text: palette.closedShade },
-      glow,
-    );
+    signBoard(ctx, name, 60, 16, boothSignColors(open), glow);
     if (open) {
       for (let i = 0; i < 8; i++) {
         ctx.fillStyle = Math.sin(t * 5 + i * 1.3) > -0.2 ? palette.gold : palette.goldShade;
@@ -1607,13 +1616,15 @@ export function visitorLook(n: number): Look {
   };
 }
 
-export const PLAYER_LOOK: Look = {
-  skin: palette.skins[0],
-  hair: palette.hairs[2],
-  shirt: palette.red,
-  pants: palette.pants[0],
-  cap: palette.gold,
-};
+export function playerLook(): Look {
+  return {
+    skin: palette.skins[0],
+    hair: palette.hairs[2],
+    shirt: palette.red,
+    pants: palette.pants[0],
+    cap: palette.gold,
+  };
+}
 
 export function drawWalker(ctx: Ctx, walker: Walker, look: Look, player = false, t = 0) {
   const p = toScreen(walker.x, walker.y);
@@ -1641,6 +1652,8 @@ export function archBounds(map: MidwayMap): Box {
 }
 
 export function drawArch(ctx: Ctx, map: MidwayMap, t: number) {
+  const image = sprite('arch');
+  if (image) return drawSprite(ctx, image, archBounds(map));
   const y = map.height - 0.75;
   const left = map.avenueX + ARCH_LEFT;
   const right = map.avenueX + ARCH_RIGHT;
@@ -1695,6 +1708,16 @@ export interface Cloud {
 }
 
 export function drawCloud(ctx: Ctx, x: number, y: number, size: number) {
+  const image = sprite('cloud');
+  if (image) {
+    const box = {
+      left: x - 30 * size,
+      right: x + 30 * size,
+      top: y - 28 * size,
+      bottom: y + 4 * size,
+    };
+    return drawSprite(ctx, image, box);
+  }
   ctx.fillStyle = palette.cloud;
   ctx.beginPath();
   ctx.roundRect(x - 30 * size, y - 8 * size, 60 * size, 12 * size, 6 * size);
@@ -1732,14 +1755,53 @@ export function drawFloaters(ctx: Ctx, floaters: readonly Floater[]) {
   ctx.globalAlpha = 1;
 }
 
+// ── Skin sprites ──────────────────────────────────────────────────────────
+
+const spriteImages = new Map<string, HTMLImageElement>();
+let spritesLoaded = 0;
+
+/** How many skin sprites have finished loading, so callers can redraw what they cached. */
+export function loadedSpriteCount(): number {
+  return spritesLoaded;
+}
+
+/**
+ * The active skin's picture for a piece of the midway, once it has loaded.
+ * Undefined means draw the piece the classic way.
+ */
+function sprite(key: SpriteKey): HTMLImageElement | undefined {
+  const url = getActiveSkin().sprites?.[key];
+  if (!url) return undefined;
+  let image = spriteImages.get(url);
+  if (!image) {
+    image = new Image();
+    image.onload = () => spritesLoaded++;
+    image.src = url;
+    spriteImages.set(url, image);
+  }
+  return image.complete && image.naturalWidth > 0 ? image : undefined;
+}
+
+/** Draws a sprite as large as fits in `box`, keeping its shape, standing on the box's bottom. */
+function drawSprite(ctx: Ctx, image: HTMLImageElement, box: Box) {
+  const width = box.right - box.left;
+  const height = box.bottom - box.top;
+  const fit = Math.min(width / image.naturalWidth, height / image.naturalHeight);
+  const w = image.naturalWidth * fit;
+  const h = image.naturalHeight * fit;
+  ctx.drawImage(image, box.left + (width - w) / 2, box.bottom - h, w, h);
+}
+
 // ── Everything else ───────────────────────────────────────────────────────
 
 export function drawProp(ctx: Ctx, prop: Prop, t: number) {
+  const image = sprite(prop.kind);
+  if (image) return drawSprite(ctx, image, propBounds(prop));
   switch (prop.kind) {
     case 'big-top':
       return bigTop(ctx, prop, t);
     case 'round-tent': {
-      const colors = TENT_COLORS[prop.variant % TENT_COLORS.length];
+      const colors = TENT_COLORS[prop.variant % TENT_COLORS.length]();
       return roundTent(
         ctx,
         prop.x + prop.w / 2,
@@ -1778,7 +1840,12 @@ export function drawProp(ctx: Ctx, prop: Prop, t: number) {
 }
 
 export function drawBooth(ctx: Ctx, slot: BoothSlot, name: string, t: number, glow: boolean) {
-  booth(ctx, slot, name, t, glow);
+  const image = sprite('booth');
+  if (!image) return booth(ctx, slot, name, t, glow);
+  drawSprite(ctx, image, boothBounds(slot));
+  // The game's name stays on top, so every booth is still readable.
+  const open = slot.gameId !== undefined;
+  onPlane(ctx, boothSignAt(slot), () => signBoard(ctx, name, 60, 16, boothSignColors(open), glow));
 }
 
 /** A rounded callout with a line of text, pointing down at a screen point. */
