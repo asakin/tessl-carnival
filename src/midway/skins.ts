@@ -5,6 +5,18 @@ import type { PropKind } from './world';
 /** A piece of the midway a skin can swap for a picture. */
 export type SpriteKey = PropKind | 'booth' | 'arch' | 'tree' | 'cloud';
 
+/** Zombies a skin mixes in among the visitors, with the colours they're drawn in. */
+export interface ZombieVisitors {
+  /** One visitor in every `every` is a zombie. */
+  every: number;
+  skins: string[];
+  hairs: string[];
+  shirts: string[];
+  pants: string[];
+  /** The colour their eyes glow. */
+  eyes: string;
+}
+
 /**
  * A look for the midway. A skin can recolour the map and swap pieces of it for
  * SVG pictures; anything it leaves out is drawn the classic way.
@@ -16,6 +28,8 @@ export interface MidwaySkin {
   palette?: Partial<MidwayPalette>;
   /** An SVG asset URL or data URL per piece, fitted to that piece's box. */
   sprites?: Partial<Record<SpriteKey, string>>;
+  /** Zombies among the visitors; without it, every visitor looks the classic way. */
+  zombies?: ZombieVisitors;
 }
 
 type SkinStorage = Pick<Storage, 'getItem' | 'setItem'>;

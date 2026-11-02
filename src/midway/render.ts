@@ -1,7 +1,7 @@
 import { canvasFont, theme } from '../carnival';
 import bannerUrl from './aidevcon-banner.png';
 import { palette } from './palette';
-import { getActiveSkin, type SpriteKey } from './skins';
+import { getActiveSkin, type MidwaySkin, type SpriteKey } from './skins';
 import {
   CART_KINDS,
   toScreen,
@@ -830,24 +830,39 @@ function person(
   ctx.beginPath();
   ctx.roundRect(x - 4, y - 16.5, 8, 9.5, 3);
   ctx.fill();
-  stroke(
-    ctx,
-    [
-      [x - 4, y - 15],
-      [x - 5 - swing, y - 9],
-    ],
-    look.skin,
-    2,
-  );
-  stroke(
-    ctx,
-    [
-      [x + 4, y - 15],
-      [x + 5 + swing, y - 9],
-    ],
-    look.skin,
-    2,
-  );
+  if (look.zombieEyes) {
+    zombieRags(ctx, x, y, look);
+    // Arms held stiffly out in front, the way zombies walk.
+    for (const side of [-1, 1])
+      stroke(
+        ctx,
+        [
+          [x + side * 3, y - 15],
+          [x + side * 2 + dir * 8, y - 15.5 + swing * 0.6],
+        ],
+        look.skin,
+        2,
+      );
+  } else {
+    stroke(
+      ctx,
+      [
+        [x - 4, y - 15],
+        [x - 5 - swing, y - 9],
+      ],
+      look.skin,
+      2,
+    );
+    stroke(
+      ctx,
+      [
+        [x + 4, y - 15],
+        [x + 5 + swing, y - 9],
+      ],
+      look.skin,
+      2,
+    );
+  }
   oval(ctx, x, y - 20.5, 4, 4, look.skin);
   ctx.fillStyle = look.hair;
   ctx.beginPath();
@@ -855,8 +870,10 @@ function person(
   else ctx.arc(x, y - 21, 4.2, Math.PI * 1.05, Math.PI * 1.95);
   ctx.fill();
   if (!options.back) {
-    oval(ctx, x - 1.5 + dir, y - 20.3, 0.6, 0.7, palette.ink);
-    oval(ctx, x + 1.5 + dir, y - 20.3, 0.6, 0.7, palette.ink);
+    const eyes = look.zombieEyes ?? palette.ink;
+    const size = look.zombieEyes ? 0.9 : 0.6;
+    oval(ctx, x - 1.5 + dir, y - 20.3, size, size + 0.1, eyes);
+    oval(ctx, x + 1.5 + dir, y - 20.3, size, size + 0.1, eyes);
   }
   if (look.cap) {
     ctx.fillStyle = look.cap;
@@ -887,6 +904,33 @@ function person(
       palette.gold,
     );
   }
+}
+
+/** A zombie's torn shirt hem, with skin showing through. */
+function zombieRags(ctx: Ctx, x: number, y: number, look: Look) {
+  poly(
+    ctx,
+    [
+      [x - 4, y - 8.5],
+      [x - 2.5, y - 6],
+      [x - 1, y - 8],
+      [x + 1, y - 5.5],
+      [x + 2.5, y - 8],
+      [x + 4, y - 6.5],
+      [x + 4, y - 9],
+      [x - 4, y - 9],
+    ],
+    look.shirt,
+  );
+  poly(
+    ctx,
+    [
+      [x - 1.5, y - 14],
+      [x + 0.5, y - 13],
+      [x - 0.5, y - 11],
+    ],
+    look.skin,
+  );
 }
 
 function cart(ctx: Ctx, prop: Prop, t: number) {
@@ -1605,9 +1649,23 @@ export interface Look {
   shirt: string;
   pants: string;
   cap?: string;
+  /** A zombie holds its arms out, wears a torn shirt and its eyes glow this colour. */
+  zombieEyes?: string;
 }
 
-export function visitorLook(n: number): Look {
+/** The look of visitor `n`; the skin can make some of them zombies. */
+export function visitorLook(n: number, skin: MidwaySkin = getActiveSkin()): Look {
+  const zombies = skin.zombies;
+  if (zombies && n % zombies.every === 0) {
+    const k = n / zombies.every;
+    return {
+      skin: zombies.skins[k % zombies.skins.length],
+      hair: zombies.hairs[(k * 2 + 1) % zombies.hairs.length],
+      shirt: zombies.shirts[k % zombies.shirts.length],
+      pants: zombies.pants[k % zombies.pants.length],
+      zombieEyes: zombies.eyes,
+    };
+  }
   return {
     skin: palette.skins[n % palette.skins.length],
     hair: palette.hairs[(n * 3 + 1) % palette.hairs.length],

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { defaultPalette, palette } from './palette';
-import { createSkinStore, getSkin, listSkins, type MidwaySkin } from './skins';
+import { visitorLook } from './render';
+import { CLASSIC_SKIN, createSkinStore, getSkin, listSkins, type MidwaySkin } from './skins';
 import { HALLOWEEN_SKIN } from './skins/halloween';
 
 function memoryStorage() {
@@ -110,6 +111,7 @@ describe('halloween skin', () => {
       'tree',
       'cart',
       'balloons',
+      'carousel',
     ] as const)
       expect(sprites[key]).toMatch(/\.svg$|^data:image\/svg\+xml/);
   });
@@ -126,5 +128,39 @@ describe('halloween skin', () => {
     expect(palette.path).toBe('#524b63');
     skins.setActive('classic');
     expect(palette.sky).toBe(defaultPalette.sky);
+  });
+});
+
+describe('visitor looks', () => {
+  const visitors = Array.from({ length: 9 }, (_, n) => n);
+
+  it('dresses every classic visitor from the palette, with no zombies', () => {
+    for (const n of visitors) {
+      const look = visitorLook(n, CLASSIC_SKIN);
+      expect(look.zombieEyes).toBeUndefined();
+      expect(defaultPalette.skins).toContain(look.skin);
+      expect(defaultPalette.shirts).toContain(look.shirt);
+    }
+  });
+
+  it('makes some halloween visitors zombies, and leaves the rest as they were', () => {
+    const zombies = HALLOWEEN_SKIN.zombies!;
+    const looks = visitors.map((n) => visitorLook(n, HALLOWEEN_SKIN));
+    const undead = looks.filter((look) => look.zombieEyes);
+    expect(undead.length).toBeGreaterThan(0);
+    expect(undead.length).toBeLessThan(looks.length);
+    for (const look of undead) {
+      expect(look.zombieEyes).toBe(zombies.eyes);
+      expect(zombies.skins).toContain(look.skin);
+      expect(zombies.shirts).toContain(look.shirt);
+      expect(defaultPalette.skins).not.toContain(look.skin);
+    }
+    visitors.forEach((n) => {
+      if (!looks[n].zombieEyes) expect(looks[n]).toEqual(visitorLook(n, CLASSIC_SKIN));
+    });
+  });
+
+  it('follows the active skin when no skin is given', () => {
+    expect(visitorLook(0).zombieEyes).toBeUndefined();
   });
 });
