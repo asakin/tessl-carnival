@@ -1,4 +1,5 @@
 import { applyPalette, type MidwayPalette } from './palette';
+import { HALLOWEEN_SKIN } from './skins/halloween';
 import type { PropKind } from './world';
 
 /** A piece of the midway a skin can swap for a picture. */
@@ -105,6 +106,7 @@ function browserStorage(): SkinStorage {
 }
 
 const skins = createSkinStore(browserStorage());
+skins.register(HALLOWEEN_SKIN);
 
 export const listSkins = skins.list;
 export const getSkin = skins.get;

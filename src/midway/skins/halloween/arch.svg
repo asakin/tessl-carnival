@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 74 56" width="74" height="56">
+  <g transform="translate(74 0) scale(-1 1)">
+  <ellipse cx="9" cy="52" rx="6" ry="3" fill="#0d071a" opacity="0.45"/>
+  <ellipse cx="65" cy="42" rx="6" ry="3" fill="#0d071a" opacity="0.45"/>
+  <path d="M6 51 L6 22 M12 52 L12 23 M62 41 L62 12 M68 42 L68 13" stroke="#1a1020" stroke-width="2.4"/>
+  <path d="M6 30 L12 31 M6 40 L12 41 M62 20 L68 21 M62 30 L68 31" stroke="#1a1020" stroke-width="1.6"/>
+  <path d="M9 22 Q37 -6 65 12" fill="none" stroke="#1a1020" stroke-width="3.2"/>
+  <path d="M9 26 Q37 2 65 16" fill="none" stroke="#1a1020" stroke-width="1.6"/>
+  <g stroke="#1a1020" stroke-width="1.4">
+    <path d="M18 19 L18 14 M26 14 L26 8 M34 11 L34 5 M42 10 L42 4 M50 11 L50 5 M58 13 L58 8"/>
+  </g>
+  <g fill="#1a1020">
+    <path d="M18 14 L16.5 11 L18 9 L19.5 11 Z M26 8 L24.5 5 L26 3 L27.5 5 Z M34 5 L32.5 2 L34 0 L35.5 2 Z M42 4 L40.5 1 L42 0 L43.5 1 Z M50 5 L48.5 2 L50 0 L51.5 2 Z M58 8 L56.5 5 L58 3 L59.5 5 Z"/>
+  </g>
+  <g fill="none" stroke="#3f394f" stroke-width="1">
+    <path d="M14 22 Q17 19 20 22 Q23 25 20 27 M60 15 Q57 12 54 15 Q51 18 54 20"/>
+  </g>
+  <path d="M20 21 L54 12" stroke="#7b2cbf" stroke-width="0.8"/>
+  <path d="M22 21 L22 25 L26 26 L26 21 Z M30 19 L30 23 L34 24 L34 18 Z M38 17 L38 21 L42 22 L42 16 Z M46 15 L46 19 L50 20 L50 14 Z" fill="#7b2cbf" opacity="0.9"/>
+  <g>
+    <ellipse cx="9" cy="17" rx="6" ry="5" fill="#ff6b1a"/>
+    <path d="M6.5 13 Q9 17 6.5 21 M11.5 13 Q9 17 11.5 21" fill="none" stroke="#c94a09" stroke-width="0.8"/>
+    <rect x="8" y="10.5" width="2" height="3" rx="0.6" fill="#2b3d23"/>
+    <path d="M6 15.5 L8 16.5 L6 17.5 Z M12 15.5 L10 16.5 L12 17.5 Z M5.5 19 Q9 22 12.5 19 L10.5 19.8 L9 20.8 L7.5 19.8 Z" fill="#ffb703"/>
+  </g>
+  <g>
+    <ellipse cx="65" cy="7" rx="6" ry="5" fill="#ff6b1a"/>
+    <path d="M62.5 3 Q65 7 62.5 11 M67.5 3 Q65 7 67.5 11" fill="none" stroke="#c94a09" stroke-width="0.8"/>
+    <rect x="64" y="0.5" width="2" height="3" rx="0.6" fill="#2b3d23"/>
+    <path d="M62 5.5 L64 6.5 L62 7.5 Z M68 5.5 L66 6.5 L68 7.5 Z M61.5 9 Q65 12 68.5 9 L66.5 9.8 L65 10.8 L63.5 9.8 Z" fill="#ffb703"/>
+  </g>
+  </g>
+</svg>

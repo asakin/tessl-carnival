@@ -57,7 +57,12 @@ export const defaultPalette = {
   balloons: [colors.stripeA, colors.accent, '#2b8ccc', colors.water, '#f59ac0'],
 };
 
-export type MidwayPalette = typeof defaultPalette;
+/** Every colour as a plain string, so a skin can override the theme's colours too. */
+export type MidwayPalette = {
+  [K in keyof typeof defaultPalette]: (typeof defaultPalette)[K] extends readonly string[]
+    ? string[]
+    : string;
+};
 
 /**
  * The colours the midway draws with right now: the default palette with the
