@@ -199,4 +199,12 @@ describe('hook a duck', () => {
     expect(lookFor('halloween').backdrop).toBeTruthy();
     expect(lookFor('classic')).toEqual({});
   });
+
+  it('has a Thanksgiving look with turkeys in a harvest booth', () => {
+    const look = lookFor('thanksgiving');
+    expect(look.creature).toBe('turkey');
+    expect(look.harvest).toBe(true);
+    expect(look.sign).toBe('Hook a Turkey');
+    expect(lookFor('halloween').creature).toBeUndefined();
+  });
 });
