@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 104" width="64" height="104">
+  <ellipse cx="32" cy="88" rx="30" ry="14" fill="#0d071a" opacity="0.45"/>
+  <path d="M4 70 L32 84 L60 70 L60 52 L32 66 L4 52 Z" fill="#4a2f1e"/>
+  <path d="M4 52 L4 70 L32 84 L32 66 Z" fill="#2e1d12"/>
+  <path d="M4 58 L32 72 M4 64 L32 78 M32 72 L60 58 M32 78 L60 64" stroke="#1a1020" stroke-width="0.8" opacity="0.7"/>
+  <path d="M4 52 L32 66 L60 52 L32 38 Z" fill="#6b4429"/>
+  <path d="M7 52 L32 64.5 L57 52" fill="none" stroke="#3f2a1a" stroke-width="1"/>
+  <path d="M5 52 L5 24 M31 66 L31 38 M59 52 L59 24" stroke="#2e1d12" stroke-width="3"/>
+  <path d="M0 26 L32 42 L64 26 L32 14 Z" fill="#1a1020"/>
+  <path d="M0 26 L32 42 L32 46 L0 30 Z" fill="#ff6b1a"/>
+  <path d="M32 42 L64 26 L64 30 L32 46 Z" fill="#c94a09"/>
+  <path d="M0 30 L4 34 L8 32 L12 36 L16 34 L20 38 L24 37 L28 41 L32 46 L36 41 L40 41 L44 37 L48 36 L52 33 L56 33 L60 29 L64 30" fill="none" stroke="#1a1020" stroke-width="1.5"/>
+  <g fill="none" stroke="#f3e9d2" stroke-width="0.6" opacity="0.8">
+    <path d="M6 32 L6 44 M6 32 L14 40 M6 32 L12 35"/>
+    <path d="M6 36 Q8 37 9 35.5 M6 40 Q9 41 11 38"/>
+    <path d="M58 32 L58 44 M58 32 L50 40 M58 32 L52 35"/>
+    <path d="M58 36 Q56 37 55 35.5 M58 40 Q55 41 53 38"/>
+  </g>
+  <path d="M12 46 L12 50 M52 46 L52 50" stroke="#3f394f" stroke-width="0.8"/>
+  <g>
+    <ellipse cx="12" cy="54" rx="5" ry="4" fill="#ff6b1a"/>
+    <path d="M10 53 L11.5 54 L10 55 Z M14 53 L12.5 54 L14 55 Z M9.5 56 Q12 58 14.5 56" fill="#ffb703" stroke="#ffb703" stroke-width="0.4"/>
+    <ellipse cx="52" cy="54" rx="5" ry="4" fill="#ff6b1a"/>
+    <path d="M50 53 L51.5 54 L50 55 Z M54 53 L52.5 54 L54 55 Z M49.5 56 Q52 58 54.5 56" fill="#ffb703" stroke="#ffb703" stroke-width="0.4"/>
+  </g>
+  <g>
+    <ellipse cx="22" cy="92" rx="6" ry="5" fill="#ff6b1a"/>
+    <path d="M19 88 Q22 92 19 96 M25 88 Q22 92 25 96" fill="none" stroke="#c94a09" stroke-width="0.8"/>
+    <rect x="21" y="85.5" width="2" height="3" rx="0.6" fill="#2b3d23"/>
+    <path d="M19.5 90.5 L21.5 91.5 L19.5 92.5 Z M24.5 90.5 L22.5 91.5 L24.5 92.5 Z M19 94 Q22 96.5 25 94" fill="#ffb703" stroke="#ffb703" stroke-width="0.4"/>
+  </g>
+</svg>

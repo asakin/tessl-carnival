@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { defaultPalette, palette } from './palette';
-import { createSkinStore, type MidwaySkin } from './skins';
+import { createSkinStore, getSkin, listSkins, type MidwaySkin } from './skins';
+import { HALLOWEEN_SKIN } from './skins/halloween';
 
 function memoryStorage() {
   const data = new Map<string, string>();
@@ -86,5 +87,44 @@ describe('skin store', () => {
     skins.setActive('night');
     expect(skins.active().id).toBe('night');
     skins.setActive('classic');
+  });
+});
+
+describe('halloween skin', () => {
+  it('is registered on the midway after the classic skin', () => {
+    expect(listSkins().map((s) => s.id)).toEqual(['classic', 'halloween']);
+    expect(getSkin('halloween')).toBe(HALLOWEEN_SKIN);
+    expect(HALLOWEEN_SKIN.name).toBe('Halloween');
+  });
+
+  it('recolours the sky, ground and paths and swaps the props for SVG sprites', () => {
+    const { palette: colors = {}, sprites = {} } = HALLOWEEN_SKIN;
+    for (const key of ['sky', 'skyHigh', 'grass', 'path', 'hedge', 'red', 'gold'] as const)
+      expect(colors[key]).not.toBe(defaultPalette[key]);
+    for (const key of [
+      'big-top',
+      'round-tent',
+      'peaked-tent',
+      'booth',
+      'arch',
+      'tree',
+      'cart',
+      'balloons',
+    ] as const)
+      expect(sprites[key]).toMatch(/\.svg$|^data:image\/svg\+xml/);
+  });
+
+  it('can be chosen as the active skin', () => {
+    const storage = memoryStorage();
+    const skins = createSkinStore(storage);
+    skins.register(HALLOWEEN_SKIN);
+    skins.setActive('halloween');
+    expect(skins.active()).toBe(HALLOWEEN_SKIN);
+    expect(storage.data.get('tessl-carnival:skin')).toBe('halloween');
+    expect(palette.sky).toBe('#1c1033');
+    expect(palette.grass).toBe('#26301a');
+    expect(palette.path).toBe('#524b63');
+    skins.setActive('classic');
+    expect(palette.sky).toBe(defaultPalette.sky);
   });
 });
