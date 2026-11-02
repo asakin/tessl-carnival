@@ -96,6 +96,8 @@ export interface MidwaySkin {
   zombies?: ZombieVisitors;
   /** Turkeys among the visitors; without it, every visitor looks the classic way. */
   turkeys?: TurkeyVisitors;
+  /** Titles to show instead of a game's own name, by game id. */
+  gameNames?: Readonly<Record<string, string>>;
 }
 
 type SkinStorage = Pick<Storage, 'getItem' | 'setItem'>;
@@ -195,3 +197,8 @@ export const getActiveSkin = skins.active;
 export const setActiveSkin = skins.setActive;
 export const registerSkin = skins.register;
 export const onSkinChange = skins.subscribe;
+
+/** The title `skin` gives a game, or the game's own name. Follows the active skin when no skin is given. */
+export function gameName(game: { id: string; name: string }, skin = getActiveSkin()): string {
+  return skin.gameNames?.[game.id] ?? game.name;
+}

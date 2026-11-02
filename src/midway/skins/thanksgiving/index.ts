@@ -1,5 +1,4 @@
 import type { MidwaySkin } from '../../skins';
-import arch from './arch.svg';
 import balloons from './balloons.svg';
 import bigTop from './big-top.svg';
 import booth from './booth.svg';
@@ -52,7 +51,6 @@ export const THANKSGIVING_SKIN: MidwaySkin = {
     'round-tent': roundTent,
     'peaked-tent': peakedTent,
     booth,
-    arch,
     tree,
     cart,
     balloons,
@@ -84,5 +82,8 @@ export const THANKSGIVING_SKIN: MidwaySkin = {
     wattle: '#d2232a',
     beak: '#f2c230',
     legs: '#d9a032',
+  },
+  gameNames: {
+    'hook-a-duck': 'Hook a Turkey',
   },
 };

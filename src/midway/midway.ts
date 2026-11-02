@@ -1,5 +1,5 @@
 import { palette } from './palette';
-import { onSkinChange } from './skins';
+import { gameName, onSkinChange } from './skins';
 import {
   archBounds,
   BOOTH_SIGN_HEIGHT,
@@ -82,23 +82,27 @@ export function startMidway(canvas: HTMLCanvasElement, options: MidwayOptions): 
   if (!ctx) throw new Error('Canvas 2D is not available');
 
   const map = layoutMidway(options.games.map((g) => g.id));
-  const names = new Map(options.games.map((g) => [g.id, g.name]));
+  const games = new Map(options.games.map((g) => [g.id, g]));
   const player = createWalker(returnTo ?? map.spawn);
   // Booths and scenery never move, so work out where each one sits once.
-  const scenery: { depth: number; box: Box; booth?: BoothSlot; prop?: Prop; name: string }[] = [
+  const scenery: { depth: number; box: Box; booth?: BoothSlot; prop?: Prop }[] = [
     ...map.booths.map((booth) => ({
       depth: booth.x + booth.y + 2,
       box: boothBounds(booth),
       booth,
-      name: booth.gameId ? (names.get(booth.gameId) ?? booth.gameId) : 'Coming soon',
     })),
     ...map.props.map((prop) => ({
       depth: prop.x + prop.y + (prop.w + prop.h) / 2,
       box: propBounds(prop),
       prop,
-      name: '',
     })),
   ];
+  // The sign follows the active skin, so a new skin retitles booths straight away.
+  const boothName = (booth: BoothSlot) => {
+    if (!booth.gameId) return 'Coming soon';
+    const game = games.get(booth.gameId);
+    return game ? gameName(game) : booth.gameId;
+  };
   const strolls = strollTiles(map);
   const visitors = createVisitors(map, 9, Math.random);
   const clouds: Cloud[] = Array.from({ length: 9 }, (_, i) => ({
@@ -372,9 +376,9 @@ export function startMidway(canvas: HTMLCanvasElement, options: MidwayOptions): 
     ];
     for (const item of scenery) {
       if (!onScreen(item.box)) continue;
-      const { depth, box, booth, prop, name } = item;
+      const { depth, box, booth, prop } = item;
       const paint = booth
-        ? () => drawBooth(ctx, booth, name, t, booth === inReach)
+        ? () => drawBooth(ctx, booth, boothName(booth), t, booth === inReach)
         : () => drawProp(ctx, prop!, t);
       drawables.push({ depth, box, draw: () => faded(box, depth, paint) });
     }

@@ -2,7 +2,7 @@ import './style.css';
 import { applyTheme, bestScore, type CarnivalGame } from './carnival';
 import { registry } from './games';
 import { startMidway } from './midway/midway';
-import { getActiveSkin, listSkins, setActiveSkin } from './midway/skins';
+import { gameName, getActiveSkin, listSkins, setActiveSkin } from './midway/skins';
 import type { BoothSlot } from './midway/world';
 import { carnivalLink, REPO_URL, shareLinks } from './share';
 
@@ -64,13 +64,13 @@ function renderMidway() {
   }
 
   const guide = app.querySelector('.midway-guide ul')!;
-  for (const game of registry.all()) {
+  const guideNames = registry.all().map((game) => {
     const item = document.createElement('li');
     item.innerHTML = `<a href="#/play/${game.id}"><span class="name"></span> <span class="best"></span></a>`;
-    item.querySelector('.name')!.textContent = game.name;
     item.querySelector('.best')!.textContent = bestText(game);
     guide.append(item);
-  }
+    return { game, name: item.querySelector('.name')! };
+  });
 
   const skinPicker = app.querySelector('.midway-skins')!;
   const skinButtons = listSkins().map((skin) => {
@@ -84,19 +84,21 @@ function renderMidway() {
     skinPicker.append(button);
     return { id: skin.id, button };
   });
+  const card = app.querySelector<HTMLElement>('.booth-card')!;
+  let reached: BoothSlot | undefined;
   const showActiveSkin = () => {
     const active = getActiveSkin().id;
     for (const { id, button } of skinButtons)
       button.setAttribute('aria-pressed', `${id === active}`);
+    for (const { game, name } of guideNames) name.textContent = gameName(game);
+    if (reached) showBooth(reached);
   };
-  showActiveSkin();
-
-  const card = app.querySelector<HTMLElement>('.booth-card')!;
   const showBooth = (booth: BoothSlot | undefined) => {
+    reached = booth;
     const game = booth?.gameId ? registry.get(booth.gameId) : undefined;
     card.hidden = booth === undefined;
     card.classList.toggle('closed', booth !== undefined && !game);
-    card.querySelector('h2')!.textContent = game?.name ?? 'Coming soon';
+    card.querySelector('h2')!.textContent = game ? gameName(game) : 'Coming soon';
     card.querySelector('.description')!.textContent =
       game?.description ?? 'This booth is waiting for a game. Build one and it opens here.';
     card.querySelector('.best')!.textContent = game ? bestText(game) : '';
@@ -104,6 +106,8 @@ function renderMidway() {
     link.hidden = !game;
     if (game) link.href = `#/play/${game.id}`;
   };
+
+  showActiveSkin();
 
   const midway = startMidway(app.querySelector('canvas')!, {
     games: registry.all(),
@@ -123,7 +127,7 @@ function renderGame(game: CarnivalGame) {
       </div>
       <canvas></canvas>
     </section>`;
-  app.querySelector('h1')!.textContent = game.name;
+  app.querySelector('h1')!.textContent = gameName(game);
   stop = game.start(app.querySelector('canvas')!);
 }
 
