@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { defaultPalette, palette } from './palette';
 import { visitorLook } from './render';
-import { CLASSIC_SKIN, createSkinStore, getSkin, listSkins, type MidwaySkin } from './skins';
+import {
+  CLASSIC_SKIN,
+  createSkinStore,
+  getSkin,
+  listSkins,
+  type CarouselLook,
+  type MidwaySkin,
+} from './skins';
 import { HALLOWEEN_SKIN } from './skins/halloween';
 
 function memoryStorage() {
@@ -111,9 +118,27 @@ describe('halloween skin', () => {
       'tree',
       'cart',
       'balloons',
-      'carousel',
     ] as const)
       expect(sprites[key]).toMatch(/\.svg$|^data:image\/svg\+xml/);
+  });
+
+  it('recolours the carousel with skeleton horses instead of a still picture', () => {
+    expect(HALLOWEEN_SKIN.sprites?.carousel).toBeUndefined();
+    const look = HALLOWEEN_SKIN.carousel!;
+    expect(look.skeletal).toBe(true);
+    expect(look.eyes).toBe(HALLOWEEN_SKIN.zombies!.eyes);
+    expect(look.tattered).toBe(true);
+    expect(look.lantern).toBeDefined();
+  });
+
+  it('needs at least one horse colour and one trim colour', () => {
+    const look = HALLOWEEN_SKIN.carousel!;
+    // @ts-expect-error an empty list leaves the horses without a colour
+    const noHorses: CarouselLook = { ...look, horses: [] };
+    // @ts-expect-error an empty list leaves the trim without a colour
+    const noTrim: CarouselLook = { ...look, trim: [] };
+    const oneEach: CarouselLook = { ...look, horses: ['#e8e0c8'], trim: ['#ff6b1a'] };
+    expect([noHorses, noTrim, oneEach]).toHaveLength(3);
   });
 
   it('can be chosen as the active skin', () => {

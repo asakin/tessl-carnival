@@ -3,7 +3,6 @@ import arch from './arch.svg';
 import balloons from './balloons.svg';
 import bigTop from './big-top.svg';
 import booth from './booth.svg';
-import carousel from './carousel.svg';
 import cart from './cart.svg';
 import peakedTent from './peaked-tent.svg';
 import roundTent from './round-tent.svg';
@@ -54,7 +53,24 @@ export const HALLOWEEN_SKIN: MidwaySkin = {
     tree,
     cart,
     balloons,
-    carousel,
+  },
+  carousel: {
+    rim: { a: '#3a2759', aShade: '#281940', b: '#1a1020', bShade: '#120a18' },
+    floor: '#2a1f3d',
+    floorShade: '#1c1430',
+    poles: '#6b5a3a',
+    horses: ['#e8e0c8', '#b9ae94'],
+    saddle: '#7b2cbf',
+    skeletal: true,
+    eyes: '#7be05a',
+    column: '#3f394f',
+    columnStripe: '#7b2cbf',
+    lantern: '#ff6b1a',
+    lanternFace: '#ffb703',
+    canopy: { a: '#5a189a', aShade: '#3c1066', b: '#1a1020', bShade: '#100a14' },
+    trim: ['#ff6b1a', '#c94a09'],
+    tattered: true,
+    flag: '#7b2cbf',
   },
   zombies: {
     every: 3,
