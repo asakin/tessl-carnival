@@ -33,7 +33,7 @@ export interface CarouselLook {
   floorShade: string;
   poles: string;
   /** The horses, alternating round the ring. */
-  horses: string[];
+  horses: readonly [string, ...string[]];
   saddle: string;
   /** Skeleton horses: a spine and ribs instead of a solid body. */
   skeletal?: boolean;
@@ -46,7 +46,7 @@ export interface CarouselLook {
   lantern?: string;
   lanternFace?: string;
   canopy: StripeColors;
-  trim: string[];
+  trim: readonly [string, ...string[]];
   /** Ragged trim, torn to different lengths. */
   tattered?: boolean;
   flag: string;

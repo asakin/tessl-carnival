@@ -726,8 +726,9 @@ function carousel(ctx: Ctx, prop: Prop, t: number, look = CLASSIC_CAROUSEL()) {
     ],
     look.columnStripe,
   );
+  // Low on the column, below the canopy's trim and bunting, so it shows.
   if (look.lantern)
-    lantern(ctx, column[0], column[1] - 22, look.lantern, look.lanternFace ?? look.flag);
+    lantern(ctx, column[0], column[1] - 4, look.lantern, look.lanternFace ?? look.flag);
   horses.filter((h) => Math.sin(h.angle) >= 0).forEach(drawHorse);
 
   dome(ctx, c, r * 1.15, roofZ, 26, look.canopy, turn);
