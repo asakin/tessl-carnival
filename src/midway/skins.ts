@@ -1,5 +1,6 @@
 import { applyPalette, type MidwayPalette } from './palette';
 import { HALLOWEEN_SKIN } from './skins/halloween';
+import { THANKSGIVING_SKIN } from './skins/thanksgiving';
 import type { PropKind } from './world';
 
 /** A piece of the midway a skin can swap for a picture. */
@@ -15,6 +16,30 @@ export interface ZombieVisitors {
   pants: string[];
   /** The colour their eyes glow. */
   eyes: string;
+}
+
+/** Turkeys a skin mixes in among the visitors, with the colours they're drawn in. */
+export interface TurkeyVisitors {
+  /** One visitor in every `every` is a turkey. */
+  every: number;
+  /** Plumage colours for their bodies and wings, and the colours of their bare heads. */
+  bodies: string[];
+  wings: string[];
+  heads: string[];
+  /** The fanned tail feathers, from the outside in. */
+  tail: readonly [string, ...string[]];
+  wattle: string;
+  beak: string;
+  /** Their legs and feet. */
+  legs: string;
+}
+
+/** The colours a turkey on the carousel is drawn in; its body colour comes from `horses`. */
+export interface TurkeyRiders {
+  /** The fanned tail feathers, from the outside in. */
+  tail: readonly [string, ...string[]];
+  wattle: string;
+  beak: string;
 }
 
 /** Two alternating stripe colours, each with a shade for the side in shadow. */
@@ -37,6 +62,8 @@ export interface CarouselLook {
   saddle: string;
   /** Skeleton horses: a spine and ribs instead of a solid body. */
   skeletal?: boolean;
+  /** Turkeys instead of horses, in `horses`' colours with these feathers. */
+  turkeys?: TurkeyRiders;
   /** The colour the horses' eyes glow; without it, they have no eyes drawn. */
   eyes?: string;
   /** The centre column, and the stripe up its middle. */
@@ -67,6 +94,8 @@ export interface MidwaySkin {
   carousel?: CarouselLook;
   /** Zombies among the visitors; without it, every visitor looks the classic way. */
   zombies?: ZombieVisitors;
+  /** Turkeys among the visitors; without it, every visitor looks the classic way. */
+  turkeys?: TurkeyVisitors;
 }
 
 type SkinStorage = Pick<Storage, 'getItem' | 'setItem'>;
@@ -158,6 +187,7 @@ function browserStorage(): SkinStorage {
 
 const skins = createSkinStore(browserStorage());
 skins.register(HALLOWEEN_SKIN);
+skins.register(THANKSGIVING_SKIN);
 
 export const listSkins = skins.list;
 export const getSkin = skins.get;
