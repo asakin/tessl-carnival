@@ -1,4 +1,5 @@
 import { palette } from './palette';
+import { onSkinChange } from './skins';
 import {
   archBounds,
   BOOTH_SIGN_HEIGHT,
@@ -16,7 +17,8 @@ import {
   groundBounds,
   HORIZON,
   label,
-  PLAYER_LOOK,
+  loadedSpriteCount,
+  playerLook,
   propBounds,
   visitorLook,
   type Box,
@@ -119,6 +121,8 @@ export function startMidway(canvas: HTMLCanvasElement, options: MidwayOptions): 
   let zoom = 2;
   let view = { w: 0, h: 0 };
   let ground: GroundLayer | undefined;
+  /** How many skin sprites had loaded when the ground layer was last drawn. */
+  let groundSprites = 0;
   const camera = { x: 0, y: 0 };
   let cameraReady = false;
 
@@ -134,8 +138,14 @@ export function startMidway(canvas: HTMLCanvasElement, options: MidwayOptions): 
       Math.min(3, Math.min(canvas.clientWidth / 720, canvas.clientHeight / 540)),
     );
     view = { w: canvas.clientWidth / zoom, h: canvas.clientHeight / zoom };
+    redrawGround();
+  };
+  const redrawGround = () => {
+    groundSprites = loadedSpriteCount();
     ground = drawGroundLayer(map, zoom * dpr);
   };
+  // A new skin repaints the grass, paths, hedges and trees straight away.
+  const stopSkinChange = onSkinChange(redrawGround);
   const observer = new ResizeObserver(resize);
   observer.observe(canvas);
   resize();
@@ -357,7 +367,7 @@ export function startMidway(canvas: HTMLCanvasElement, options: MidwayOptions): 
       {
         depth: playerDepth,
         box: walkerBox(player),
-        draw: () => drawWalker(ctx, player, PLAYER_LOOK, true, t),
+        draw: () => drawWalker(ctx, player, playerLook(), true, t),
       },
     ];
     for (const item of scenery) {
@@ -428,6 +438,8 @@ export function startMidway(canvas: HTMLCanvasElement, options: MidwayOptions): 
       options.onReach(reach);
     }
 
+    // Trees in the ground layer fall back to the classic drawing until their sprite loads.
+    if (loadedSpriteCount() !== groundSprites) redrawGround();
     updateFloaters(dt);
     updateCamera(dt);
     draw(time / 1000);
@@ -443,6 +455,7 @@ export function startMidway(canvas: HTMLCanvasElement, options: MidwayOptions): 
     stop() {
       cancelAnimationFrame(frame);
       observer.disconnect();
+      stopSkinChange();
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', onBlur);
