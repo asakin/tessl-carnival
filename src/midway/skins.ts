@@ -17,6 +17,41 @@ export interface ZombieVisitors {
   eyes: string;
 }
 
+/** Two alternating stripe colours, each with a shade for the side in shadow. */
+export interface StripeColors {
+  a: string;
+  aShade: string;
+  b: string;
+  bShade: string;
+}
+
+/** The carousel's colours. It still spins and bobs; only its look changes. */
+export interface CarouselLook {
+  /** The deck's striped rim, and its floor. */
+  rim: StripeColors;
+  floor: string;
+  floorShade: string;
+  poles: string;
+  /** The horses, alternating round the ring. */
+  horses: string[];
+  saddle: string;
+  /** Skeleton horses: a spine and ribs instead of a solid body. */
+  skeletal?: boolean;
+  /** The colour the horses' eyes glow; without it, they have no eyes drawn. */
+  eyes?: string;
+  /** The centre column, and the stripe up its middle. */
+  column: string;
+  columnStripe: string;
+  /** A jack-o'-lantern on the centre column, in this colour. */
+  lantern?: string;
+  lanternFace?: string;
+  canopy: StripeColors;
+  trim: string[];
+  /** Ragged trim, torn to different lengths. */
+  tattered?: boolean;
+  flag: string;
+}
+
 /**
  * A look for the midway. A skin can recolour the map and swap pieces of it for
  * SVG pictures; anything it leaves out is drawn the classic way.
@@ -28,6 +63,8 @@ export interface MidwaySkin {
   palette?: Partial<MidwayPalette>;
   /** An SVG asset URL or data URL per piece, fitted to that piece's box. */
   sprites?: Partial<Record<SpriteKey, string>>;
+  /** The carousel's colours; without it, the classic carousel. A carousel sprite wins over it. */
+  carousel?: CarouselLook;
   /** Zombies among the visitors; without it, every visitor looks the classic way. */
   zombies?: ZombieVisitors;
 }

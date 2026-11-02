@@ -111,9 +111,17 @@ describe('halloween skin', () => {
       'tree',
       'cart',
       'balloons',
-      'carousel',
     ] as const)
       expect(sprites[key]).toMatch(/\.svg$|^data:image\/svg\+xml/);
+  });
+
+  it('recolours the carousel with skeleton horses instead of a still picture', () => {
+    expect(HALLOWEEN_SKIN.sprites?.carousel).toBeUndefined();
+    const look = HALLOWEEN_SKIN.carousel!;
+    expect(look.skeletal).toBe(true);
+    expect(look.eyes).toBe(HALLOWEEN_SKIN.zombies!.eyes);
+    expect(look.tattered).toBe(true);
+    expect(look.lantern).toBeDefined();
   });
 
   it('can be chosen as the active skin', () => {

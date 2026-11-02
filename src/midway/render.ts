@@ -1,7 +1,13 @@
 import { canvasFont, theme } from '../carnival';
 import bannerUrl from './aidevcon-banner.png';
 import { palette } from './palette';
-import { getActiveSkin, type MidwaySkin, type SpriteKey } from './skins';
+import {
+  getActiveSkin,
+  type CarouselLook,
+  type MidwaySkin,
+  type SpriteKey,
+  type StripeColors,
+} from './skins';
 import {
   CART_KINDS,
   toScreen,
@@ -367,12 +373,7 @@ export function drawFrontHedge(ctx: Ctx, map: MidwayMap) {
 
 // ── Round things: tents, the big top, the carousel ────────────────────────
 
-interface Stripes {
-  a: string;
-  aShade: string;
-  b: string;
-  bShade: string;
-}
+type Stripes = StripeColors;
 
 /** Read at draw time, so they follow the active skin. */
 const RED = (): Stripes => ({
@@ -465,13 +466,16 @@ function scallopRing(
   count: number,
   depth: number,
   colors: readonly string[],
+  ragged = false,
 ) {
   for (let k = 0; k < count; k++) {
     const a0 = (k / count) * Math.PI;
     const a1 = ((k + 1) / count) * Math.PI;
     const p0 = rimPoint(c, r, a0, z);
     const p1 = rimPoint(c, r, a1, z);
-    const m = rimPoint(c, r * 1.02, (a0 + a1) / 2, z - depth * 2);
+    // Ragged trim hangs torn to uneven lengths.
+    const drop = ragged ? depth * (0.5 + ((k * 7) % 5) * 0.3) : depth;
+    const m = rimPoint(c, r * 1.02, (a0 + a1) / 2, z - drop * 2);
     ctx.fillStyle = colors[k % colors.length];
     ctx.beginPath();
     ctx.moveTo(p0[0], p0[1]);
@@ -545,16 +549,139 @@ function bigTop(ctx: Ctx, prop: Prop, t: number) {
   }
 }
 
-function carousel(ctx: Ctx, prop: Prop, t: number) {
+/** The classic carousel's colours, read at draw time so they follow the palette. */
+const CLASSIC_CAROUSEL = (): CarouselLook => ({
+  rim: RED(),
+  floor: palette.pink,
+  floorShade: palette.pinkShade,
+  poles: palette.gold,
+  horses: [palette.woodLight, palette.cream],
+  saddle: palette.red,
+  column: palette.gold,
+  columnStripe: palette.red,
+  canopy: RED(),
+  trim: [palette.red, palette.cream],
+  flag: palette.gold,
+});
+
+/** A carousel horse, its body at (`x`, `hy`), its head towards `facing`. */
+function carouselHorse(
+  ctx: Ctx,
+  x: number,
+  hy: number,
+  facing: number,
+  color: string,
+  look: CarouselLook,
+) {
+  const head: Pt[] = [
+    [x + facing * 4, hy - 1],
+    [x + facing * 7, hy - 7],
+    [x + facing * 9, hy - 6],
+    [x + facing * 6, hy + 1],
+  ];
+  const legs: Pt[][] = [
+    [
+      [x - 4, hy + 2],
+      [x - 5, hy + 7],
+    ],
+    [
+      [x + 4, hy + 2],
+      [x + 5, hy + 7],
+    ],
+  ];
+  if (look.skeletal) {
+    // A spine with ribs hanging off it, and a bony tail.
+    stroke(
+      ctx,
+      [
+        [x - 6, hy],
+        [x - 3, hy - 2],
+        [x + 3, hy - 2],
+        [x + 6, hy],
+      ],
+      color,
+      1.4,
+    );
+    for (let i = -1.5; i <= 1.5; i++)
+      stroke(
+        ctx,
+        [
+          [x + i * 2.4, hy - 2],
+          [x + i * 2.4 + 0.4, hy + 2],
+        ],
+        color,
+        1,
+      );
+    stroke(
+      ctx,
+      [
+        [x - facing * 6, hy],
+        [x - facing * 9, hy + 3],
+      ],
+      color,
+      1,
+    );
+  } else {
+    oval(ctx, x, hy, 6, 3.2, color);
+  }
+  poly(ctx, head, color);
+  for (const leg of legs) stroke(ctx, leg, color, 1.4);
+  poly(
+    ctx,
+    [
+      [x - 2, hy - 3],
+      [x + 2, hy - 3],
+      [x + 1, hy - 1],
+      [x - 1, hy - 1],
+    ],
+    look.saddle,
+  );
+  if (look.eyes) oval(ctx, x + facing * 7, hy - 5, 1, 1, look.eyes);
+}
+
+/** A jack-o'-lantern on the carousel's centre column. */
+function lantern(ctx: Ctx, x: number, y: number, color: string, face: string) {
+  oval(ctx, x, y, 4.5, 3.8, color);
+  poly(
+    ctx,
+    [
+      [x - 2.4, y - 1.4],
+      [x - 1, y - 0.6],
+      [x - 2.4, y],
+    ],
+    face,
+  );
+  poly(
+    ctx,
+    [
+      [x + 2.4, y - 1.4],
+      [x + 1, y - 0.6],
+      [x + 2.4, y],
+    ],
+    face,
+  );
+  stroke(
+    ctx,
+    [
+      [x - 2.4, y + 1.4],
+      [x, y + 2.4],
+      [x + 2.4, y + 1.4],
+    ],
+    face,
+    1,
+  );
+}
+
+function carousel(ctx: Ctx, prop: Prop, t: number, look = CLASSIC_CAROUSEL()) {
   const cx = prop.x + prop.w / 2;
   const cy = prop.y + prop.h / 2;
   const c = at(cx, cy);
   const turn = t * 0.5;
   const r = 1.75;
   oval(ctx, c[0] + 8, c[1] + 4, r * ISO_RX * 1.1, r * ISO_RY * 1.1, palette.shadow);
-  cylinder(ctx, c, r, 0, 6, RED(), 24);
-  oval(ctx, c[0], c[1] - 6, r * ISO_RX, r * ISO_RY, palette.pink);
-  oval(ctx, c[0], c[1] - 6, r * ISO_RX * 0.82, r * ISO_RY * 0.82, palette.pinkShade);
+  cylinder(ctx, c, r, 0, 6, look.rim, 24);
+  oval(ctx, c[0], c[1] - 6, r * ISO_RX, r * ISO_RY, look.floor);
+  oval(ctx, c[0], c[1] - 6, r * ISO_RX * 0.82, r * ISO_RY * 0.82, look.floorShade);
 
   const roofZ = 46;
   const horses = Array.from({ length: 8 }, (_, i) => {
@@ -570,51 +697,12 @@ function carousel(ctx: Ctx, prop: Prop, t: number) {
         [x, y],
         [x, y - (roofZ - 6) + (Math.sin(angle) * r * ISO_RY) / 4],
       ],
-      palette.gold,
+      look.poles,
       1.4,
     );
     const facing = Math.cos(angle + Math.PI / 2) < 0 ? -1 : 1;
-    const color = i % 2 ? palette.cream : palette.woodLight;
-    const hy = y - 16 + bob;
-    oval(ctx, x, hy, 6, 3.2, color);
-    poly(
-      ctx,
-      [
-        [x + facing * 4, hy - 1],
-        [x + facing * 7, hy - 7],
-        [x + facing * 9, hy - 6],
-        [x + facing * 6, hy + 1],
-      ],
-      color,
-    );
-    stroke(
-      ctx,
-      [
-        [x - 4, hy + 2],
-        [x - 5, hy + 7],
-      ],
-      color,
-      1.4,
-    );
-    stroke(
-      ctx,
-      [
-        [x + 4, hy + 2],
-        [x + 5, hy + 7],
-      ],
-      color,
-      1.4,
-    );
-    poly(
-      ctx,
-      [
-        [x - 2, hy - 3],
-        [x + 2, hy - 3],
-        [x + 1, hy - 1],
-        [x - 1, hy - 1],
-      ],
-      palette.red,
-    );
+    const color = look.horses[i % look.horses.length];
+    carouselHorse(ctx, x, y - 16 + bob, facing, color, look);
   };
   horses.filter((h) => Math.sin(h.angle) < 0).forEach(drawHorse);
   const column = rimPoint(c, 0, 0, 6);
@@ -626,7 +714,7 @@ function carousel(ctx: Ctx, prop: Prop, t: number) {
       [column[0] + 5, c[1] - roofZ],
       [column[0] - 5, c[1] - roofZ],
     ],
-    palette.gold,
+    look.column,
   );
   poly(
     ctx,
@@ -636,15 +724,17 @@ function carousel(ctx: Ctx, prop: Prop, t: number) {
       [column[0] + 2, c[1] - roofZ],
       [column[0] - 2, c[1] - roofZ],
     ],
-    palette.red,
+    look.columnStripe,
   );
+  if (look.lantern)
+    lantern(ctx, column[0], column[1] - 22, look.lantern, look.lanternFace ?? look.flag);
   horses.filter((h) => Math.sin(h.angle) >= 0).forEach(drawHorse);
 
-  dome(ctx, c, r * 1.15, roofZ, 26, RED(), turn);
-  scallopRing(ctx, c, r * 1.15, roofZ, 14, 4, [palette.red, palette.cream]);
+  dome(ctx, c, r * 1.15, roofZ, 26, look.canopy, turn);
+  scallopRing(ctx, c, r * 1.15, roofZ, 14, 4, look.trim, look.tattered);
   ringFlags(ctx, c, r * 1.05, roofZ - 6, t, 16);
   knob(ctx, c[0], c[1] - roofZ - 26);
-  flag(ctx, c[0], c[1] - roofZ - 28, t, palette.gold);
+  flag(ctx, c[0], c[1] - roofZ - 28, t, look.flag);
 }
 
 // ── Square things ─────────────────────────────────────────────────────────
@@ -1877,7 +1967,7 @@ export function drawProp(ctx: Ctx, prop: Prop, t: number) {
     case 'ferris-wheel':
       return ferrisWheel(ctx, prop, t);
     case 'carousel':
-      return carousel(ctx, prop, t);
+      return carousel(ctx, prop, t, getActiveSkin().carousel);
     case 'wagon':
       return wagon(ctx, prop);
     case 'cart':
