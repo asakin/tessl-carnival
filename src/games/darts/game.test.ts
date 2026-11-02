@@ -138,4 +138,11 @@ describe('darts', () => {
     expect(skin.dart).toBeTruthy();
     expect(skin.board).not.toEqual(dartsSkin('classic').board);
   });
+
+  it('hangs a pumpkin dartboard on Halloween and Thanksgiving, and the classic board otherwise', () => {
+    expect(dartsSkin('halloween').pumpkinBoard).toBe(true);
+    expect(dartsSkin('thanksgiving').pumpkinBoard).toBe(true);
+    expect(dartsSkin('classic').pumpkinBoard).toBeFalsy();
+    expect(dartsSkin('no-such-skin').pumpkinBoard).toBeFalsy();
+  });
 });

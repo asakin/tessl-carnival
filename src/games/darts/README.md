@@ -31,8 +31,10 @@ when the round ends.
 
 The booth follows the skin picked on the midway. The Classic skin draws the
 booth from the carnival theme. The Halloween skin swaps in a haunted back wall
-and a bone and pumpkin dart, and recolours the board with theme colours. Any
-other skin gets the Classic booth.
+and a bone and pumpkin dart. The Halloween and Thanksgiving skins both hang a
+ribbed pumpkin, with its stem and vine, in place of the round board, and paint
+the scoring rings on it in theme colours. The rings are the same size, so
+scoring does not change. Any other skin gets the Classic booth.
 
 ## Files
 
@@ -42,3 +44,4 @@ other skin gets the Classic booth.
 - `game.test.ts`: tests for the game logic and the skins.
 - `skins/halloween/`: the Halloween look, `backdrop.svg` and `dart.svg`,
   generated with Recraft V4.1 Vector.
+- `skins/thanksgiving/`: the Thanksgiving look, the pumpkin board's ring colours.
