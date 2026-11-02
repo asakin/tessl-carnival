@@ -4,6 +4,7 @@ import { visitorLook } from './render';
 import {
   CLASSIC_SKIN,
   createSkinStore,
+  gameName,
   getSkin,
   listSkins,
   type CarouselLook,
@@ -115,7 +116,6 @@ describe('halloween skin', () => {
       'round-tent',
       'peaked-tent',
       'booth',
-      'arch',
       'tree',
       'cart',
       'balloons',
@@ -175,7 +175,6 @@ describe('thanksgiving skin', () => {
       'round-tent',
       'peaked-tent',
       'booth',
-      'arch',
       'tree',
       'cart',
       'balloons',
@@ -202,6 +201,38 @@ describe('thanksgiving skin', () => {
     expect(palette.grass).toBe(THANKSGIVING_SKIN.palette!.grass);
     skins.setActive('classic');
     expect(palette.sky).toBe(defaultPalette.sky);
+  });
+});
+
+describe('game titles', () => {
+  const games = [
+    { id: 'hook-a-duck', name: 'Hook a Duck' },
+    { id: 'ring-toss', name: 'Ring Toss' },
+    { id: 'water-cannon', name: 'Water Cannon' },
+    { id: 'darts', name: 'Darts' },
+  ];
+
+  it('calls the duck booth Hook a Turkey under thanksgiving, and leaves the rest alone', () => {
+    expect(games.map((game) => gameName(game, THANKSGIVING_SKIN))).toEqual([
+      'Hook a Turkey',
+      'Ring Toss',
+      'Water Cannon',
+      'Darts',
+    ]);
+  });
+
+  it('keeps every game its own name under classic and halloween', () => {
+    for (const skin of [CLASSIC_SKIN, HALLOWEEN_SKIN])
+      expect(games.map((game) => gameName(game, skin))).toEqual(games.map((game) => game.name));
+  });
+
+  it('follows the active skin when no skin is given', () => {
+    const duck = games[0];
+    expect(gameName(duck)).toBe('Hook a Duck');
+  });
+
+  it('draws the classic gate in every skin', () => {
+    for (const skin of listSkins()) expect(skin.sprites?.arch).toBeUndefined();
   });
 });
 

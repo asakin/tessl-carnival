@@ -1,5 +1,4 @@
 import type { MidwaySkin } from '../../skins';
-import arch from './arch.svg';
 import balloons from './balloons.svg';
 import bigTop from './big-top.svg';
 import booth from './booth.svg';
@@ -49,7 +48,6 @@ export const HALLOWEEN_SKIN: MidwaySkin = {
     'round-tent': roundTent,
     'peaked-tent': peakedTent,
     booth,
-    arch,
     tree,
     cart,
     balloons,
