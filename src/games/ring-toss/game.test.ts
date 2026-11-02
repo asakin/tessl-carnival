@@ -102,4 +102,19 @@ describe('ring toss', () => {
     state.phase = 'over';
     expect(throwRing(state, 400, 100)).toBe(false);
   });
+
+  it('keeps the landing feedback when a ring lands at the end of a step', () => {
+    const state = createState();
+    throwRing(state, 400, 100);
+    step(state, FLIGHT_TIME);
+    expect(state.landings).toHaveLength(1);
+    expect(state.landings[0].age).toBeCloseTo(0);
+  });
+
+  it('ages the landing feedback only from the moment the ring lands', () => {
+    const state = createState();
+    throwRing(state, 400, 100);
+    step(state, FLIGHT_TIME + 0.1);
+    expect(state.landings[0].age).toBeCloseTo(0.1);
+  });
 });

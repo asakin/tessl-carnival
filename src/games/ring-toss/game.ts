@@ -122,6 +122,7 @@ export function ringPosition(ring: Ring): { x: number; y: number } {
 /** Advances the game by `dt` seconds. */
 export function step(state: RingTossState, dt: number): void {
   state.time += dt;
+  for (const landing of state.landings) landing.age += dt;
 
   const flying: Ring[] = [];
   for (const ring of state.rings) {
@@ -135,11 +136,12 @@ export function step(state: RingTossState, dt: number): void {
       bottle.rings += 1;
       state.score += bottle.points;
     }
-    state.landings.push({ x: ring.toX, y: ring.toY, scored: Boolean(bottle), age: 0 });
+    // Count only the part of this step after the ring landed.
+    const age = ring.age - FLIGHT_TIME;
+    state.landings.push({ x: ring.toX, y: ring.toY, scored: Boolean(bottle), age });
   }
   state.rings = flying;
 
-  for (const landing of state.landings) landing.age += dt;
   state.landings = state.landings.filter((l) => l.age < 0.5);
 
   if (state.ringsLeft === 0 && state.rings.length === 0) state.phase = 'over';
